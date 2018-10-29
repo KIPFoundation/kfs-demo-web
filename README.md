@@ -1,2 +1,1 @@
-# KFS Demo - Web dApp
-
+KFS Demo DApp
