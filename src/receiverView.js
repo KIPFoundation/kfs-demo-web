@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Form, Input, Message, Grid , TextArea, Radio } from 'semantic-ui-react';
+import { Button, Form, Input, Message, Grid } from 'semantic-ui-react';
 // import logo from './logo.svg';
 import './App.css';
 import web3 from './ethereum/web3.js';
@@ -12,9 +12,18 @@ class ReceiverView extends Component {
     this.state = {
       sender: '',
       hashMessage:'',
+      receipent:'',
       realContent:'',
       visible:false
     }
+  }
+
+  
+  componentDidMount() {
+    web3.eth.getAccounts().then((accounts, err) => {
+      this.setState({receipent: accounts[0]});
+    
+    });
   }
 
   handleDismiss = () => {
@@ -22,9 +31,11 @@ class ReceiverView extends Component {
   }
 
   getContent = () => {
-      axios.get('//204.48.21.88:3000/read/'+this.state.hashMessage+'?senderPub='+window.btoa(this.state.sender))
+    const url = '//204.48.21.88:3000/read/'+this.state.hashMessage+'?reciPub='+window.btoa(this.state.sender.toLowerCase());
+      axios.get(url)
       .then( response => {
         console.log(response);
+        //console.log(response.data.charAt(0));
         this.setState({realContent:response.data,visible:true})
       })
       .catch(function (error) {
@@ -36,10 +47,17 @@ class ReceiverView extends Component {
     return (
       <div className="App">
         <header className="App-header">
-            <Grid>
+            <Grid style={{width:'500px'}}>
               <Grid.Row>
                 <Grid.Column width={16}>
                   <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
+                  <br /><br />
+                  <Form.Field>
+                    <h4>Your address</h4>
+                    <Input disabled size="large" style={{ width: "100%"}}
+                      value={this.state.receipent}      
+                    />
+                  </Form.Field>
                   <Form.Field>
                     <h4>Enter Sender's address</h4>
                     <Input style={{ width: "100%" }} size="large"

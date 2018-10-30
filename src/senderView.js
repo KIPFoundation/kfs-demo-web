@@ -5,6 +5,8 @@ import './App.css';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
 
+let fileByteArray = [];
+
 class SenderView extends Component {
 
   constructor(props){
@@ -20,7 +22,8 @@ class SenderView extends Component {
       mimeType:'',
       uploadedFile:'',
       hashMessage:'',
-      visible: false 
+      visible: false,
+      alert:''
     }
   }
 
@@ -36,48 +39,72 @@ class SenderView extends Component {
   }
 
   sendRequest = () => {
-    // axios.get('//204.48.21.88:3000/create?mime=data:text/plain&content=base64,TWFuIGlzIGRpc3Rpbmd1aXNoZWQsIG5vdCBvbmx5IGJ5IGhpcyByZWFzb24sIGJ1dCBieSB0aGlzIHNpbmd1bGFyIHBhc3Npb24gZnJvbSBvdGhlciBhbmltYWxzLCB3aGljaCBpcyBhIGx1c3Qgb2YgdGhlIG1pbmQsIHRoYXQgYnkgYSBwZXJzZXZlcmFuY2Ugb2YgZGVsaWdodCBpbiB0aGUgY29udGludWVkIGFuZCBpbmRlZmF0aWdhYmxlIGdlbmVyYXRpb24gb2Yga25vd2xlZGdlLCBleGNlZWRzIHRoZSBzaG9ydCB2ZWhlbWVuY2Ugb2YgYW55IGNhcm5hbCBwbGVhc3VyZS4=
-    //&senderPub=MHg3MTExRmVBOGVEZUZhMTEzMTFGMDA2QkI1Y0UxQTA0Yzg4OTg2OEE4&reciPub=MHhjYTg0MzU2OWUzNDI3MTQ0Y2VhZDVlNGQ1OTk5YTNkMGNjZjkyYjhl')
-    // .then(function (response) {
-    //   console.log(response);
-    // })
-    // .catch(function (error) {
-    //   console.log(error);
-    // });
-    console.log(window.btoa(this.state.sender));
-    console.log(window.btoa(this.state.receipent));
-    console.log(this.state.mimeType);
-    console.log(this.state.base64content);
-    console.log(this.state.uploadedFile);
-    
-    if(this.state.mime !=='' && this.state.base64content!=='' && this.state.uploadedFile==='') {
-      const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+'&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
-      const url = 'http://204.48.21.88:3000/create?mime=data:text/plain&content=base64,aGVsbG8=&senderPub=MHg4YzA1OWUyMzg5MGFkNmUyYTQyM2ZiNTIzNTk1NmUxN2M3YzkyZDdm&reciPub=MHg0ODg3YmU5ZjUyZWZlNzdmMTU4MjEwNzU3NjE1M2RkMzMwNzE2ODlj';
-
-      console.log(url1);
-      axios.get(url1)
-      .then( response => {
-        console.log(response);
-        this.setState({hashMessage:response.data,visible:true})
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+    if(this.state.checked === true) {
+      if(this.state.mimeType === '' || this.state.base64content === '' || this.state.receipent === '') {
+        this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
+      }
+      else {
+        const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+window.btoa(this.state.base64content)+
+        '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
+        axios.get(url1)
+        .then( response => {
+          console.log(response);
+          this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
+        })
+        .catch(error => {
+          this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+        });
+      }
     }
-
     else {
-      console.log('coming');
-      axios.get('//204.48.21.88:3000/create?path='+this.state.uploadedFile+'&senderPub='
-      +window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase()))
-      .then(response => {
-        console.log(response);
-        this.setState({hashMessage:response.data,visible:true})
-      })
-      .catch(function (error) {
-        console.log(error);
-      });
+      if(this.state.uploadedFile === '' || this.state.receipent === '') {
+        this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
+      }
+      else {
+        axios.get('//204.48.21.88:3000/create?file='+this.state.uploadedFile+'&senderPub='
+        +window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase()))
+        .then(response => {
+          console.log(response);
+          this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
+        })
+        .catch(error => {
+          this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+        });
+      }
     }
   }
+
+
+  fileToByteConversion = (fileObject) => {
+    console.log(fileObject);
+    this.setState({uploadedFile:fileObject});
+    // var reader = new FileReader();
+    // reader.onload = this.processFile(fileObject);
+    // reader.readAsArrayBuffer(fileObject); 
+  }
+  
+  // processFile = (theFile) => {
+  //   return function(e) { 
+  //     var theBytes = e.target.result;
+  //     //console.log(theBytes);
+  //     fileByteArray = theBytes;
+  //   }
+  // }
+
+  
+  // fileToByteConversion = fileObject => {
+  //   let reader = new FileReader();
+  //   reader.onload = event => { 
+  //     if (event.target.readyState === FileReader.DONE) {
+  //       var arrayBuffer = event.target.result,
+  //       fileByteArray = Arrays.toString(arrayBuffer.getBytes())
+  //       //  this.setState({uploadedBArray:fileByteArray});
+  //     }
+  //   }
+  //   reader.readAsArrayBuffer(fileObject); 
+  //   console.log(fileByteArray);
+  //   //this.setState({uploadedBArray:fileByteArray});
+  // }
 
   render() {
     const mimes = ['text/plain','text/html','image/jpeg','image/png'];
@@ -91,10 +118,11 @@ class SenderView extends Component {
     return (
       <div className="App">
         <header className="App-header">
-            <Grid>
+            <Grid style={{width:'500px'}}>
               <Grid.Row>
-                <Grid.Column width={16}>
-                  <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
+                <Grid.Column width={16}>   
+                  <Form method="post" encType="multipart/form-data" >
+                  <br /><br />
                   <Form.Field>
                     <h4>Your address</h4>
                     <Input disabled size="large" style={{ width: "100%"}}
@@ -108,55 +136,46 @@ class SenderView extends Component {
                     onChange={event => this.setState({ receipent: event.target.value})}
                     />
                   </Form.Field>
-                  {/* <Form.Field>
-                    <h4>Enter Private key</h4>
-                    <Input style={{ width: "100%" }}
-                      value={this.state.private}
-                      onChange={event => this.setState({ private: event.target.value})}
-                    />
-                  </Form.Field> */}
                   <Form.Field>
                   <Radio toggle
-                    label={this.state.checked ? 'Would like to send a file' : 'Would like to send base64 content'}
+                    label={this.state.checked ? 'Would like to send as file' : 'Would like to send as base64 content'}
                     onClick={() => 
                       this.setState({checked: !this.state.checked})
                     } 
                     checked={this.state.checked} />
                   </Form.Field>             
-                {/* {this.state.checked ?  */}
+                {this.state.checked ? 
+                  <div>
                     <Form.Field>
                       <h4>Select content's mime here</h4>
                       <Dropdown placeholder='Select Mime type' 
                       onChange={ (e,data) => this.setState({ mimeType : data.value}) }
                       fluid search selection options={mimeOptions} />
-                      {/* <Input style={{ width: "100%" }}
-                        value={this.state.mime}
-                        onChange={event => this.setState({ mime: event.target.value})}
-                      /> */}
                     </Form.Field>
                     <Form.Field>
-                    <h4>Enter base64 content here</h4>
-                     <TextArea placeholder='Base64 content ' 
+                    <h4>Enter data here</h4>
+                     <TextArea placeholder='Will be converted to Base64 content ' 
                         value={this.state.base64content}
                         onChange={event => this.setState({ base64content: event.target.value})}
                         />
                     </Form.Field>
-                    
-                    
+                  </div>
+                :
                   
-
                   <div className="upload-btn-wrapper" style={{fontSize:''}}>
                     <br/>
                     <b>Upload a file</b>
-                      {/* <button className="btn-primary">Upload */}
-                      <input type="file" name="myfile"  onChange={event => this.setState({uploadedFile : event.target.files[0]})}/>
-                      {/* </button> */}
+                      <input type="file" name="file" 
+                      onChange={ event => this.fileToByteConversion(event.target.files[0])}/>
+                      {/* onChange={ event => this.setState({ uploadedFile : event.target.files[0]})}/> */}
                   </div> 
+                }
+
                   { this.state.visible ? 
                     <Form.Field>
                       <Message positive
                       onDismiss={this.handleDismiss}>
-                      <Message.Header>Kfs File Id</Message.Header>
+                      <Message.Header>{this.state.alert}</Message.Header>
                       <b>
                       {this.state.hashMessage} 
                       </b>
