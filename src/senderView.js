@@ -44,12 +44,17 @@ class SenderView extends Component {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
       else {
-        const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+window.btoa(this.state.base64content)+
+        const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
         axios.get(url1)
         .then( response => {
-          console.log(response);
+          console.log(typeof response);
+          if(response.data == 'false') {
+            this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+          }
+          else {
           this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
+          }
         })
         .catch(error => {
           this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
@@ -57,12 +62,14 @@ class SenderView extends Component {
       }
     }
     else {
-      if(this.state.uploadedFile === '' || this.state.receipent === '') {
+      if(this.state.receipent === '') {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
       else {
-        axios.get('//204.48.21.88:3000/create?file='+this.state.uploadedFile+'&senderPub='
-        +window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase()))
+        const url2 = '//204.48.21.88:3000/create?file='+fileByteArray+'&senderPub='
+        +window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
+        console.log(url2);
+        axios.get(url2)
         .then(response => {
           console.log(response);
           this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
@@ -77,19 +84,20 @@ class SenderView extends Component {
 
   fileToByteConversion = (fileObject) => {
     console.log(fileObject);
-    this.setState({uploadedFile:fileObject});
-    // var reader = new FileReader();
-    // reader.onload = this.processFile(fileObject);
-    // reader.readAsArrayBuffer(fileObject); 
+    // this.setState({uploadedFile:fileObject});
+    var reader = new FileReader();
+    reader.onload = this.processFile(fileObject);
+    reader.readAsArrayBuffer(fileObject); 
   }
   
-  // processFile = (theFile) => {
-  //   return function(e) { 
-  //     var theBytes = e.target.result;
-  //     //console.log(theBytes);
-  //     fileByteArray = theBytes;
-  //   }
-  // }
+  processFile = () => {
+    return function(e) { 
+      var theBytes = e.target.result;
+      console.log(theBytes);
+
+      fileByteArray = theBytes;
+    }
+  }
 
   
   // fileToByteConversion = fileObject => {
@@ -121,7 +129,7 @@ class SenderView extends Component {
             <Grid style={{width:'500px'}}>
               <Grid.Row>
                 <Grid.Column width={16}>   
-                  <Form method="post" encType="multipart/form-data" >
+                  <Form encType="multipart/form-data" >
                   <br /><br />
                   <Form.Field>
                     <h4>Your address</h4>
