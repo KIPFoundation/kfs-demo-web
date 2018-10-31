@@ -66,6 +66,7 @@ class SenderView extends Component {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
       else {
+        console.log(typeof(fileByteArray))
         const url2 = '//204.48.21.88:3000/create?file='+fileByteArray+'&senderPub='
         +window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
         console.log(url2);
@@ -93,26 +94,10 @@ class SenderView extends Component {
   processFile = () => {
     return function(e) { 
       var theBytes = e.target.result;
-      console.log(theBytes);
-
-      fileByteArray = theBytes;
+      fileByteArray = JSON.stringify(Array.apply(null, new Uint8Array(theBytes)));
     }
   }
 
-  
-  // fileToByteConversion = fileObject => {
-  //   let reader = new FileReader();
-  //   reader.onload = event => { 
-  //     if (event.target.readyState === FileReader.DONE) {
-  //       var arrayBuffer = event.target.result,
-  //       fileByteArray = Arrays.toString(arrayBuffer.getBytes())
-  //       //  this.setState({uploadedBArray:fileByteArray});
-  //     }
-  //   }
-  //   reader.readAsArrayBuffer(fileObject); 
-  //   console.log(fileByteArray);
-  //   //this.setState({uploadedBArray:fileByteArray});
-  // }
 
   render() {
     const mimes = ['text/plain','text/html','image/jpeg','image/png'];
