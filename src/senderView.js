@@ -4,6 +4,7 @@ import { Button, Form, Input, Message, Grid , TextArea, Radio ,Modal, Dropdown} 
 import './App.css';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
+import kfs from './ethereum/kfs.js'
 
 class SenderView extends Component {
 
@@ -19,10 +20,11 @@ class SenderView extends Component {
       checked:false,
       mimeType:'',
       uploadedFile:'',
-      hashMessage:'',
+      hashMessage:'QmaqwCq4D7QPBwfARCBG18TQ5ggEmfSnpbpAigCPfi6iFy',
       visible: false,
       alert:'',
-      open: false
+      fileName:'',
+      open: true
     }
   }
 
@@ -51,7 +53,7 @@ class SenderView extends Component {
             this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
           }
           else {
-            this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
+            this.setState({hashMessage:response.data, open: true})
           }
         })
         .catch(error => {
@@ -76,7 +78,7 @@ class SenderView extends Component {
           this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
         }
         else {
-          this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
+          this.setState({hashMessage:response.data, open: true})
         }
       })
       .catch(error => {
@@ -86,8 +88,17 @@ class SenderView extends Component {
 
 
 
-  closeConfigShow = () => () => {
-    this.setState({ open: true });
+ 
+  saveToBC = async() => {
+    console.log(kfs);
+    try{
+      await kfs.methods.saveFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage).send({
+        from: this.state.sender
+      });
+      this.setState({open:false,hashMessage:'Your File has been saved to Blockchain',visible:true,alert:'KFS Alert'})
+    }catch(e) {
+      console.log(e);
+    }
   }
 
   close = () => this.setState({ open: false });
@@ -201,24 +212,24 @@ class SenderView extends Component {
           open={this.state.open}
           onClose={this.close}
         >
-          <Modal.Header>Delete Your Account</Modal.Header>
+          <Modal.Header>Save File ID in Blockchain</Modal.Header>
           <Modal.Content>
-            <p>Are you sure you want to delete your account</p>
+            
+            <Input label='KFS FILE ID' disabled type="text" value={this.state.hashMessage}/><br />
+            <Input label="Enter File Name" 
+            onChange={event => this.setState({fileName:event.target.value})} 
+            value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/>
+            <p>Are you sure you want to save your file id</p>
           </Modal.Content>
           <Modal.Actions>
             <Button onClick={this.close} negative>
               No
             </Button>
-            <Button
-              onClick={this.close}
-              positive
-              labelPosition='right'
-              icon='checkmark'
-              content='Yes'
-            />
+            <Button onClick={this.saveToBC} positive>
+              Save
+            </Button>
           </Modal.Actions>
         </Modal>
-        <Button onClick={this.closeConfigShow()}>Saving the file</Button>
       </div>
     );
   }
