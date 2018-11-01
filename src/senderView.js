@@ -5,9 +5,7 @@ import './App.css';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
 import kfs from './ethereum/kfs.js'
-
 class SenderView extends Component {
-
   constructor(props){
     super(props);
     this.state = {
@@ -20,25 +18,22 @@ class SenderView extends Component {
       checked:false,
       mimeType:'',
       uploadedFile:'',
-      hashMessage:'QmaqwCq4D7QPBwfARCBG18TQ5ggEmfSnpbpAigCPfi6iFy',
+      hashMessage:'',
       visible: false,
       alert:'',
       fileName:'',
-      open: true
+      open: false
     }
   }
-
   componentDidMount(){
     web3.eth.getAccounts().then((accounts, err) => {
       this.setState({sender: accounts[0]});
     
     });
   }
-
   handleDismiss = () => {
     this.setState({ visible: false });
   }
-
   sendRequest = () => {
       if(this.state.mimeType === '' || this.state.base64content === '' || this.state.receipent === '') {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
@@ -62,11 +57,9 @@ class SenderView extends Component {
       }
     }
     
-
     handleUpload = (event) => {
       console.log('coming')
       event.preventDefault();
-
       const data = new FormData();
       data.append('file', this.state.uploadedFile);
       data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
@@ -85,9 +78,6 @@ class SenderView extends Component {
         this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
       });
   }
-
-
-
  
   saveToBC = async() => {
     console.log(kfs);
@@ -100,9 +90,7 @@ class SenderView extends Component {
       console.log(e);
     }
   }
-
   close = () => this.setState({ open: false });
-
   render() {
     const mimes = ['text/plain','text/html','image/jpeg','image/png'];
     const mimeOptions = mimes.map((mime,index) => {
@@ -215,8 +203,8 @@ class SenderView extends Component {
           <Modal.Header>Save File ID in Blockchain</Modal.Header>
           <Modal.Content>
             
-            <Input label='KFS FILE ID' disabled type="text" value={this.state.hashMessage}/><br />
-            <Input label="Enter File Name" 
+            <Input style={{width:'70%'}} label="KFS File ID    " disabled type="text" value={this.state.hashMessage}/><br /><br />
+            <Input style={{width:'70%'}} label="Enter File Name" 
             onChange={event => this.setState({fileName:event.target.value})} 
             value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/>
             <p>Are you sure you want to save your file id</p>
@@ -234,5 +222,4 @@ class SenderView extends Component {
     );
   }
 }
-
 export default SenderView;
