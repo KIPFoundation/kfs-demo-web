@@ -70,9 +70,10 @@ class SenderView extends Component {
       data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
       data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
       console.log(data);
-      axios.post('http://localhost:3000/upload', data)
+      axios.post('http://204.48.21.88:3000/upload', data)
         .then(function (response) {
           console.log(response);
+          this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
         })
         .catch(function (error) {
           console.log(error);

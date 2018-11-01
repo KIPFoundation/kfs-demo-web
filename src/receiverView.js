@@ -43,7 +43,10 @@ class ReceiverView extends Component {
         }
         else {
           if(returnType === 'image/jpeg' || returnType === 'image/png') {
-            console.log('Image')
+            console.log('Image');
+            // const img = response.data;
+            
+            // this.setState({source:response.data});
           }
           else {
               this.setState({realContent:response.data,visible:true,alert:'KFS Response'})
