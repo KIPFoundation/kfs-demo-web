@@ -32,7 +32,8 @@ class ReceiverView extends Component {
   }
 
   getContent = () => {
-    const url = '//204.48.21.88:3000/read/'+this.state.hashMessage+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+    const url = 'http://204.48.21.88:3000/read/'+this.state.hashMessage+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+    console.log(url);
       axios.get(url)
       .then( response => {
         console.log(response);
@@ -43,10 +44,8 @@ class ReceiverView extends Component {
         }
         else {
           if(returnType === 'image/jpeg' || returnType === 'image/png') {
-            console.log('Image');
-            // const img = response.data;
-            
-            // this.setState({source:response.data});
+            // const test = "data:image/png;"+response.data;
+            this.setState({source:url});
           }
           else {
               this.setState({realContent:response.data,visible:true,alert:'KFS Response'})

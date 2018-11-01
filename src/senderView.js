@@ -71,13 +71,17 @@ class SenderView extends Component {
       data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
       console.log(data);
       axios.post('http://204.48.21.88:3000/upload', data)
-        .then(function (response) {
-          console.log(response);
+      .then( response => {
+        if(response.data == 'false') {
+          this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+        }
+        else {
           this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
-        })
-        .catch(function (error) {
-          console.log(error);
-        });
+        }
+      })
+      .catch(error => {
+        this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+      });
   }
 
 
