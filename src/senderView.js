@@ -1,11 +1,9 @@
 import React, { Component } from 'react';
-import { Button, Form, Input, Message, Grid , TextArea, Radio , Dropdown} from 'semantic-ui-react';
+import { Button, Form, Input, Message, Grid , TextArea, Radio ,Modal, Dropdown} from 'semantic-ui-react';
 // import logo from './logo.svg';
 import './App.css';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
-
-let fileByteArray = [];
 
 class SenderView extends Component {
 
@@ -23,7 +21,8 @@ class SenderView extends Component {
       uploadedFile:'',
       hashMessage:'',
       visible: false,
-      alert:''
+      alert:'',
+      open: false
     }
   }
 
@@ -39,21 +38,20 @@ class SenderView extends Component {
   }
 
   sendRequest = () => {
-    if(this.state.checked === true) {
       if(this.state.mimeType === '' || this.state.base64content === '' || this.state.receipent === '') {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
       else {
         const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
+        console.log(url1);
         axios.get(url1)
         .then( response => {
-          console.log(typeof response);
           if(response.data == 'false') {
             this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
           }
           else {
-          this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
+            this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
           }
         })
         .catch(error => {
@@ -61,43 +59,33 @@ class SenderView extends Component {
         });
       }
     }
-    else {
-      if(this.state.receipent === '') {
-        this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
-      }
-      else {
-        console.log(typeof(fileByteArray))
-        const url2 = '//204.48.21.88:3000/create?file='+fileByteArray+'&senderPub='
-        +window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
-        console.log(url2);
-        axios.get(url2)
-        .then(response => {
+    
+
+    handleUpload = (event) => {
+      console.log('coming')
+      event.preventDefault();
+
+      const data = new FormData();
+      data.append('file', this.state.uploadedFile);
+      data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
+      data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+      console.log(data);
+      axios.post('http://localhost:3000/upload', data)
+        .then(function (response) {
           console.log(response);
-          this.setState({hashMessage:response.data,visible:true,alert:'KFS File ID'})
         })
-        .catch(error => {
-          this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+        .catch(function (error) {
+          console.log(error);
         });
-      }
-    }
   }
 
 
-  fileToByteConversion = (fileObject) => {
-    console.log(fileObject);
-    // this.setState({uploadedFile:fileObject});
-    var reader = new FileReader();
-    reader.onload = this.processFile(fileObject);
-    reader.readAsArrayBuffer(fileObject); 
-  }
-  
-  processFile = () => {
-    return function(e) { 
-      var theBytes = e.target.result;
-      fileByteArray = JSON.stringify(Array.apply(null, new Uint8Array(theBytes)));
-    }
+
+  closeConfigShow = () => () => {
+    this.setState({ open: true });
   }
 
+  close = () => this.setState({ open: false });
 
   render() {
     const mimes = ['text/plain','text/html','image/jpeg','image/png'];
@@ -114,31 +102,29 @@ class SenderView extends Component {
             <Grid style={{width:'500px'}}>
               <Grid.Row>
                 <Grid.Column width={16}>   
-                  <Form encType="multipart/form-data" >
-                  <br /><br />
-                  <Form.Field>
-                    <h4>Your address</h4>
-                    <Input disabled size="large" style={{ width: "100%"}}
-                      value={this.state.sender}      
-                    />
-                  </Form.Field>
-                  <Form.Field>
-                    <h4>Enter Receipent's address</h4>
-                    <Input style={{ width: "100%" }} size="large"
-                    value={this.state.receipent}
-                    onChange={event => this.setState({ receipent: event.target.value})}
-                    />
-                  </Form.Field>
-                  <Form.Field>
-                  <Radio toggle
-                    label={this.state.checked ? 'Would like to send as file' : 'Would like to send as base64 content'}
-                    onClick={() => 
-                      this.setState({checked: !this.state.checked})
-                    } 
-                    checked={this.state.checked} />
-                  </Form.Field>             
-                {this.state.checked ? 
-                  <div>
+                    <br /><br />
+                    <Radio toggle
+                      label={!this.state.checked ? 'Would like to send as file' : 'Would like to send as base64 content'}
+                      onClick={() => 
+                        this.setState({checked: !this.state.checked})
+                      } 
+                      checked={this.state.checked} />
+                  
+                  {!this.state.checked ? 
+                  <Form>
+                    <Form.Field>
+                      <h4>Your address</h4>
+                      <Input disabled size="large" style={{ width: "100%"}}
+                        value={this.state.sender}      
+                      />
+                    </Form.Field>
+                    <Form.Field>
+                      <h4>Enter Receipent's address</h4>
+                      <Input style={{ width: "100%" }} size="large"
+                      value={this.state.receipent}
+                      onChange={event => this.setState({ receipent: event.target.value})}
+                      />
+                    </Form.Field>            
                     <Form.Field>
                       <h4>Select content's mime here</h4>
                       <Dropdown placeholder='Select Mime type' 
@@ -146,25 +132,13 @@ class SenderView extends Component {
                       fluid search selection options={mimeOptions} />
                     </Form.Field>
                     <Form.Field>
-                    <h4>Enter data here</h4>
-                     <TextArea placeholder='Will be converted to Base64 content ' 
+                    <h4>Enter base64 content here</h4>
+                      <TextArea placeholder='Enter Base64 content ' 
                         value={this.state.base64content}
                         onChange={event => this.setState({ base64content: event.target.value})}
                         />
                     </Form.Field>
-                  </div>
-                :
-                  
-                  <div className="upload-btn-wrapper" style={{fontSize:''}}>
-                    <br/>
-                    <b>Upload a file</b>
-                      <input type="file" name="file" 
-                      onChange={ event => this.fileToByteConversion(event.target.files[0])}/>
-                      {/* onChange={ event => this.setState({ uploadedFile : event.target.files[0]})}/> */}
-                  </div> 
-                }
-
-                  { this.state.visible ? 
+                    { this.state.visible ? 
                     <Form.Field>
                       <Message positive
                       onDismiss={this.handleDismiss}>
@@ -175,13 +149,71 @@ class SenderView extends Component {
                     </Message>
                     </Form.Field>
                   : ''}
-                  <Message error header="Oops!" hidden={true} onDismiss={this.errorMessageDismiss} content={this.state.errorMessage} />
-                  <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
-                </Form>
+                    <Message error header="Oops!" hidden={true} onDismiss={this.errorMessageDismiss} content={this.state.errorMessage} />
+                    <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
+                  </Form>
+                :
+                <Form encType="multipart/form-data" method="post">
+                    <Form.Field>
+                      <h4>Your address</h4>
+                      <Input disabled size="large" name="senderPub" style={{ width: "100%"}}
+                        value={this.state.sender}      
+                      />
+                    </Form.Field>
+                    <Form.Field>
+                      <h4>Enter Receipent's address</h4>
+                      <Input style={{ width: "100%" }} 
+                      name="reciPub"
+                      value={this.state.receipent}
+                      onChange={event => this.setState({ receipent: event.target.value})}
+                    />
+                    </Form.Field>  
+                    <Form.Field>
+                      <h4>Upload File</h4>          
+                      <input type="file" name="file" 
+                      onChange={ event => this.setState({uploadedFile : event.target.files[0]})}/>
+                    </Form.Field>
+                    { this.state.visible ? 
+                    <Form.Field>
+                      <Message positive
+                      onDismiss={this.handleDismiss}>
+                      <Message.Header>{this.state.alert}</Message.Header>
+                      <b>
+                      {this.state.hashMessage} 
+                      </b>
+                    </Message>
+                    </Form.Field>
+                  : ''}
+                    <Message error header="Oops!" hidden={true} onDismiss={this.errorMessageDismiss} content={this.state.errorMessage} />
+                    <br/><Button onClick={this.handleUpload} primary>Submit</Button>
+                  </Form>
+                }
               </Grid.Column>
             </Grid.Row>
           </Grid>
         </header>
+        <Modal
+          open={this.state.open}
+          onClose={this.close}
+        >
+          <Modal.Header>Delete Your Account</Modal.Header>
+          <Modal.Content>
+            <p>Are you sure you want to delete your account</p>
+          </Modal.Content>
+          <Modal.Actions>
+            <Button onClick={this.close} negative>
+              No
+            </Button>
+            <Button
+              onClick={this.close}
+              positive
+              labelPosition='right'
+              icon='checkmark'
+              content='Yes'
+            />
+          </Modal.Actions>
+        </Modal>
+        <Button onClick={this.closeConfigShow()}>Saving the file</Button>
       </div>
     );
   }
