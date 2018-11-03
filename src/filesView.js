@@ -63,6 +63,7 @@ class FilesView extends Component {
     return (
       <div className="App">
         <header className="App-header">
+            <br /><br />
             <Grid style={{width:'500px'}}>
               <Grid.Row>
                 <Grid.Column width={16}>

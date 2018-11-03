@@ -32,12 +32,13 @@ class ReceiverView extends Component {
   }
 
   getContent = () => {
+    this.setState({source:''});
     const url = 'http://204.48.21.88:3000/read/'+this.state.hashMessage+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
     console.log(url);
       axios.get(url)
       .then( response => {
-        console.log(response);
         const returnType = response.headers['content-type'];
+        console.log(returnType);
         if(response.data === false) {
           console.log(response.data);
           this.setState({realContent:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -53,8 +54,8 @@ class ReceiverView extends Component {
         }
         //this.setState({realContent:response.data,visible:true})
       })
-      .catch(function (error) {
-        console.log(error);
+      .catch((error) => {
+        this.setState({realContent:'UnAuthorized Access',visible:true,alert:'KFS Alert'})
       });
   }
 

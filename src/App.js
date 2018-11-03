@@ -35,7 +35,7 @@ class App extends Component {
                 <Grid.Column></Grid.Column>
                 <Grid.Column color={this.state.tab1} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab1:'grey', tab2:'black', tab3:'black'})} to="/sender"><p className={this.state.tab1 === 'grey' ? 'active':'non-active'}>Sender's View</p></Link></Grid.Column>          
                 <Grid.Column color={this.state.tab2} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab2:'grey', tab3:'black', tab1:'black'})}  to="/receiver"><p className={this.state.tab2 === 'grey' ? 'active':'non-active'}>Receiver's View</p></Link></Grid.Column>
-                <Grid.Column color={this.state.tab3} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab3:'grey', tab1:'black', tab2:'black'})}  to="/files"><p className={this.state.tab3 === 'grey' ? 'active':'non-active'}>File Directory</p></Link></Grid.Column>
+                <Grid.Column color={this.state.tab3} ><Link onClick={() => this.setState({tab3:'grey', tab1:'black', tab2:'black'})}  to="/files"><p className={this.state.tab3 === 'grey' ? 'active':'non-active'}>File Directory</p></Link></Grid.Column>
                 <Grid.Column></Grid.Column>
                 <Grid.Column></Grid.Column>
               </Grid.Row>
