@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Form, Input, Message, Grid ,Image} from 'semantic-ui-react';
+import { Button, Form, Radio, Input, Message, Grid ,Image} from 'semantic-ui-react';
 import logo from './logo.svg';
 import './App.css';
 import web3 from './ethereum/web3.js';
@@ -11,11 +11,12 @@ class ReceiverView extends Component {
     super(props);
     this.state = {
       sender: '',
-      hashMessage:'',
+      hashID:'',
       receipent:'',
       realContent:'',
       source:'',
       visible:false,
+      readOnly:false,
       alert:''
     }
   }
@@ -33,7 +34,13 @@ class ReceiverView extends Component {
 
   getContent = () => {
     this.setState({source:''});
-    const url = 'http://204.48.21.88:3000/read/'+this.state.hashMessage+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+    let url;
+    if(!this.state.readOnly) {
+      url = 'http://204.48.21.88:3000/appdata/'+this.state.hashID+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+    }
+    else {
+      url = 'http://204.48.21.88:3000/read/'+this.state.hashID+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+    }
     console.log(url);
       axios.get(url)
       .then( response => {
@@ -44,7 +51,7 @@ class ReceiverView extends Component {
           this.setState({realContent:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
         }
         else {
-          if(returnType === 'image/jpeg' || returnType === 'image/png') {
+          if(returnType === 'image/jpeg' || returnType === 'image/png' || returnType === 'image/gif') {
             // const test = "data:image/png;"+response.data;
             this.setState({source:url});
           }
@@ -66,14 +73,8 @@ class ReceiverView extends Component {
             <Grid style={{width:'500px'}}>
               <Grid.Row>
                 <Grid.Column width={16}>
-                  <Form onSubmit={this.onSubmit} error={!!this.state.errorMessage}>
+                  <Form onSubmit={this.onSubmit}>
                   <br /><br />
-                  {/* <Form.Field>
-                    <h4>Your address</h4>
-                    <Input disabled size="large" style={{ width: "100%"}}
-                      value={this.state.receipent}      
-                    />
-                  </Form.Field> */}
                   <Form.Field>
                     <h4>Your Address</h4>
                     <Input style={{ width: "100%" }} size="large"
@@ -81,11 +82,18 @@ class ReceiverView extends Component {
                     onChange={event => this.setState({ receipent: event.target.value})}
                     />
                   </Form.Field>
+                  <Radio toggle
+                      label='fetch read only files'
+                      onClick={() => 
+                        this.setState({readOnly: !this.state.readOnly})
+                      } 
+                      checked={this.state.readOnly} />
+                      <br /><br />
                   <Form.Field>
                     <h4>Enter KFS file id</h4>
                     <Input style={{ width: "100%" }} size="large"
-                    value={this.state.hashMessage}
-                    onChange={event => this.setState({ hashMessage: event.target.value})}
+                    value={this.state.hashID}
+                    onChange={event => this.setState({ hashID: event.target.value})}
                     />
                   </Form.Field>
                   { this.state.visible ? 
@@ -99,8 +107,6 @@ class ReceiverView extends Component {
                     </Message>
                     </Form.Field>
                   : ''}
-                  
-                  <Message error header="Oops!" hidden={true} onDismiss={this.errorMessageDismiss} content={this.state.errorMessage} />
                   <br/><Button loading={this.state.submitButton}  onClick={this.getContent} primary>Submit</Button>
                   <Form.Field>
                     <br />

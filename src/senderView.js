@@ -22,6 +22,9 @@ class SenderView extends Component {
       visible: false,
       alert:'',
       fileName:'',
+      appID:'',
+      readNWrite:false,
+      directory:'',
       open: false
     }
   }
@@ -34,9 +37,45 @@ class SenderView extends Component {
   handleDismiss = () => {
     this.setState({ visible: false });
   }
-  sendRequest = () => {
+  sendRequest = async () => {
       if(this.state.mimeType === '' || this.state.base64content === '' || this.state.receipent === '') {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
+      }
+      else  if(this.state.readNWrite) {
+        if(this.state.appID === '') {
+          this.setState({hashMessage:'Please enter file name',visible:true,alert:'KFS Alert'});
+        }
+        else {
+          const appIdUrl = 'http://204.48.21.88:3000/createAppID/'+this.state.appID;
+          axios.get(appIdUrl)
+          .then( response => {
+            if(response.data === 'false') {
+              this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+            }
+            else {
+              const appIDHash = response.data;
+              console.log(this.state.appID+" : "+response.data);
+              const updateURL = 'http://204.48.21.88:3000/update?appID='+appIDHash+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+              '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
+              console.log(updateURL);
+              axios.get(updateURL)
+              .then( response => {
+                if(response.data === 'false') {
+                  this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+                }
+                else {
+                  this.setState({open:true,fileName:this.state.appID,hashMessage:appIDHash});
+                }
+              })
+              .catch(error => {
+                this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+              });
+            }
+          })
+          .catch(error => {
+            this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+          });
+        }
       }
       else {
         const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
@@ -58,34 +97,73 @@ class SenderView extends Component {
     }
     
     handleUpload = (event) => {
-      console.log('coming')
-      event.preventDefault();
-      const data = new FormData();
-      data.append('file', this.state.uploadedFile);
-      data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
-      data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-      console.log(data);
-      axios.post('http://204.48.21.88:3000/upload', data)
-      .then( response => {
-        if(response.data == 'false') {
-          this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+      if(this.state.receipent === '' || this.state.uploadedFile === '' || this.state.sender === '') {
+        this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
+      }
+      else if(this.state.readNWrite) {
+        if(this.state.appID === '') {
+          this.setState({hashMessage:'Please enter file name',visible:true,alert:'KFS Alert'});
         }
         else {
-          this.setState({hashMessage:response.data, open: true})
+          const appIdUrl = 'http://204.48.21.88:3000/createAppID/'+this.state.appID;
+          axios.get(appIdUrl)
+          .then( response => {
+            if(response.data === 'false') {
+              this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+            }
+            else {
+              const appIDHash = response.data;
+              const formData = new FormData();
+              formData.append('file', this.state.uploadedFile);
+              formData.append('appID', appIDHash);
+              formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
+              formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+              axios.post('http://204.48.21.88:3000/upload/update?', formData)
+              .then( response => {
+                if(response.data === 'false') {
+                  this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+                }
+                else {
+                  this.setState({hashMessage:appIDHash,fileName:this.state.appID,open:true,visible:false})
+                }
+              })
+              .catch(error => {
+                this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+              });
+            }
+          })
+          .catch(error => {
+            this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+          });
         }
-      })
-      .catch(error => {
-        this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
-      });
-  }
- 
+      }
+      else {
+        const data = new FormData();
+        data.append('file', this.state.uploadedFile);
+        data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
+        data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+        console.log(data);
+        axios.post('http://204.48.21.88:3000/upload', data)
+        .then( response => {
+          if(response.data === 'false') {
+            this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+          }
+          else {
+            this.setState({hashMessage:response.data, open:true,visible:false})
+          }
+        })
+        .catch(error => {
+          this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+        });
+       }
+    }
+
   saveToBC = async() => {
-    console.log(kfs);
     try{
       await kfs.methods.saveFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage).send({
         from: this.state.sender
       });
-      this.setState({open:false,hashMessage:'Your File has been saved to Blockchain',visible:true,alert:'KFS Alert'})
+      this.setState({open:false,hashMessage:'Your File with name'+this.state.fileName+'has been saved to Blockchain'+this,visible:true,alert:'KFS Alert'})
     }catch(e) {
       console.log(e);
     }
@@ -108,9 +186,9 @@ class SenderView extends Component {
                 <Grid.Column width={16}>   
                     <br /><br />
                     <Radio toggle
-                      label={!this.state.checked ? 'Would like to send as file' : 'Would like to send as base64 content'}
+                      label='Would like to send as file'
                       onClick={() => 
-                        this.setState({checked: !this.state.checked})
+                        this.setState({checked: !this.state.checked,visible:false,readNWrite:false,appID:'',hashMessage:''})
                       } 
                       checked={this.state.checked} />
                   
@@ -142,6 +220,25 @@ class SenderView extends Component {
                         onChange={event => this.setState({ base64content: event.target.value})}
                         />
                     </Form.Field>
+                    <Radio toggle
+                      label='send as read and write'
+                      onClick={() => 
+                        this.setState({readNWrite: !this.state.readNWrite})
+                      } 
+                      checked={this.state.readNWrite} />
+                       <br />
+                    {this.state.readNWrite ? 
+                      <Form.Field>
+                        <h4>Choose file name to save with</h4>
+                        <Input style={{ width: "100%" }} 
+                        name="appID"
+                        value={this.state.appID}
+                        onChange={event => this.setState({appID: event.target.value})}
+                      />
+                      </Form.Field> 
+                      :
+                      ""
+                    }
                     { this.state.visible ? 
                     <Form.Field>
                       <Message positive
@@ -176,7 +273,27 @@ class SenderView extends Component {
                       <h4>Upload File</h4>          
                       <input type="file" name="file" 
                       onChange={ event => this.setState({uploadedFile : event.target.files[0]})}/>
-                    </Form.Field>
+                    </Form.Field> 
+                    <Radio toggle
+                      label='send as read and write'
+                      onClick={() => 
+                        this.setState({readNWrite: !this.state.readNWrite})
+                      } 
+                      checked={this.state.readNWrite} />
+                       <br />
+                      {this.state.readNWrite ?  
+                      <Form.Field>
+                        <h4>Choose file name to save with</h4>
+                        <Input style={{ width: "100%" }} 
+                        name="appID"
+                        value={this.state.appID}
+                        onChange={event => this.setState({ appID: event.target.value})}
+                      />
+                      </Form.Field> 
+                      :
+                      ""
+                      }
+                   
                     { this.state.visible ? 
                     <Form.Field>
                       <Message positive
@@ -203,13 +320,14 @@ class SenderView extends Component {
           <Modal.Header>Save File ID in Blockchain</Modal.Header>
           <Modal.Content>
             
-            <Input style={{width:'70%'}} label="KFS File ID    " disabled type="text" value={this.state.hashMessage}/><br /><br />
+            <Input style={{width:'70%'}} label={this.state.readNWrite ? 'KFS APP ID' : 'KFS FILE ID'} disabled type="text" value={this.state.hashMessage}/><br /><br />
             <Input style={{width:'70%'}} label="Enter File Name" 
             onChange={event => this.setState({fileName:event.target.value})} 
             value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/>
-            <p>Are you sure you want to save your file id</p>
+            
           </Modal.Content>
           <Modal.Actions>
+            Are you sure you want to save your file id
             <Button onClick={this.close} negative>
               No
             </Button>
