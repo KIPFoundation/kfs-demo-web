@@ -133,6 +133,16 @@ contract KFSContract{
         return true;
     }
     
+    function checkAppOfIndex(bytes32 appName) public constant returns (App retApp){
+        App storage app = allApps[appName_index[appName]];
+        return app;
+    }
+    
+    function checkAppPreviousHashes(bytes32 appName) public constant returns (string[] retHashStrings){
+        App storage app = allApps[appName_index[appName]];
+        return app.kfshashes;
+    }
+    
     // function getAllApps() public constant returns(bytes32[] retAppNames, string[] retAppIDs){
     //     bytes32[] localAppNames;
     //     string[] localAppIDs;
