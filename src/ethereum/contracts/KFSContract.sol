@@ -133,15 +133,15 @@ contract KFSContract{
         return true;
     }
     
-    function getAllApps() public constant returns(bytes32[] retAppNames, string[] retAppIDs){
-        bytes32[] localAppNames;
-        string[] localAppIDs;
-        for(uint i=0; i < allApps.length; i++){
-            localAppNames.push(allApps[i].appName);
-            localAppIDs.push(allApps[i].appID);
-        }
-        return (localAppNames, localAppIDs);   
-    }
+    // function getAllApps() public constant returns(bytes32[] retAppNames, string[] retAppIDs){
+    //     bytes32[] localAppNames;
+    //     string[] localAppIDs;
+    //     for(uint i=0; i < allApps.length; i++){
+    //         localAppNames.push(allApps[i].appName);
+    //         localAppIDs.push(allApps[i].appID);
+    //     }
+    //     return (localAppNames, localAppIDs);   
+    // }
     
     function getUpdaterDetails(bytes32 appName) public constant returns(Update[] retUpdaters){
         return appName_Updater[appName];
@@ -149,6 +149,10 @@ contract KFSContract{
     
     function getAppsOfOwner() public constant returns (App[] retApps){
         return appOwner_app[msg.sender];
+    }
+    
+    function getAppOfIndex(uint index) public constant returns (bytes32 retAppName, string retAppID){
+        return (allApps[index].appName, allApps[index].appID);
     }
     
 }
