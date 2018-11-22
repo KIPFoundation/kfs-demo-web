@@ -88,7 +88,7 @@ contract KFSContract{
  
     // Who is allowed to save receipents for a file? onlyOwner?
     function saveRecepientsForApp(bytes32 appName, address[] receipents) public returns (bool saveReceipentsBool){
-        require(apps[appName] == true);
+        require(apps[appName] == true && appName_receipents_check[appName][msg.sender] == true);
         for(uint i=0; i<receipents.length; i++){
             saveRecepientForApp(appName, receipents[i]);
         }
@@ -96,7 +96,6 @@ contract KFSContract{
     }
  
     function saveRecepientForApp(bytes32 appName, address receipent) private returns (bool){
-        require(appName_receipents_check[appName][msg.sender] == true);
         appName_receipents[appName].push(receipent);
         appName_receipents_check[appName][receipent] = true;
         return true;
