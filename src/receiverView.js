@@ -62,8 +62,9 @@ class ReceiverView extends Component {
         //this.setState({realContent:response.data,visible:true})
       })
       .catch((error) => {
-        this.setState({realContent:'UnAuthorized Access',visible:true,alert:'KFS Alert'})
-      });
+        this.setState({realContent:'UnAuthorized Access or Error in Fetching',visible:true,alert:'KFS Alert'})
+        console.log(error);
+    });
   }
 
   render() {

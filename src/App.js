@@ -5,7 +5,7 @@ import './App.css';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import SenderView from './senderView';
 import ReceiverView from './receiverView';
-import FilesView from './filesView';
+import FilesView from './filesView1';
 import Logo from './kipLogo.png';
 
 class App extends Component {

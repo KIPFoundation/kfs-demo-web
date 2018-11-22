@@ -34,9 +34,26 @@ class SenderView extends Component {
     
     });
   }
+  mimCheck = (file) => {
+    // const Unixfs = require('ipfs-unixfs')
+    // const {DAGNode} = require('ipld-dag-pb')
+
+    // const data = Buffer.from('hello world', 'ascii')
+    // const unixFs = new Unixfs('file', data)
+    // console.log(file);
+    // DAGNode.create(unixFs.marshal(), (err, dagNode) => {
+    //   if (err) return console.error(err)
+    //   // console.log(dagNode.toJSON());
+    //   console.log(dagNode.multihash);
+    // })
+
+    this.setState({uploadedFile : file});
+  }
+
   handleDismiss = () => {
     this.setState({ visible: false });
   }
+
   sendRequest = async () => {
       if(this.state.mimeType === '' || this.state.base64content === '' || this.state.receipent === '') {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
@@ -61,13 +78,16 @@ class SenderView extends Component {
               axios.get(updateURL)
               .then( response => {
                 if(response.data === 'false') {
+                  console.log(response.data);
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
                 }
                 else {
+                  console.log(response.data);
                   this.setState({open:true,fileName:this.state.appID,hashMessage:appIDHash});
                 }
               })
               .catch(error => {
+                console.log(error);
                 this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
               });
             }
@@ -113,18 +133,21 @@ class SenderView extends Component {
             }
             else {
               const appIDHash = response.data;
+              console.log('App ID : ',appIDHash);
               const formData = new FormData();
               formData.append('file', this.state.uploadedFile);
               formData.append('appID', appIDHash);
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+              console.log('http://204.48.21.88:3000/upload/update?', formData);
               axios.post('http://204.48.21.88:3000/upload/update?', formData)
               .then( response => {
                 if(response.data === 'false') {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
                 }
                 else {
-                  this.setState({hashMessage:appIDHash,fileName:this.state.appID,open:true,visible:false})
+                  console.log(response.data);
+                  // this.setState({hashMessage:appIDHash,fileName:this.state.appID,open:true,visible:false})
                 }
               })
               .catch(error => {
@@ -272,7 +295,7 @@ class SenderView extends Component {
                     <Form.Field>
                       <h4>Upload File</h4>          
                       <input type="file" name="file" 
-                      onChange={ event => this.setState({uploadedFile : event.target.files[0]})}/>
+                      onChange={ event => this.mimCheck(event.target.files[0])}/>
                     </Form.Field> 
                     <Radio toggle
                       label='send as read and write'
