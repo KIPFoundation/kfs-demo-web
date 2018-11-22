@@ -33,6 +33,7 @@ contract KFSContract{
     mapping(bytes32 => Update[]) appName_Updater; // Maybe we can take this inside struct itself
     
     event AppUpdated(bytes32 appName, string appID, address updater, uint updationDate, string latestHash);
+    event Read(bytes32 name, address reader, uint timeofRead);
     
     modifier onlyOwner{
         require(msg.sender == owner);
@@ -79,10 +80,15 @@ contract KFSContract{
     function getAppCount() public constant returns (uint retAppCount){
         return allApps.length;
     }
+    
+    function readFile(bytes32 name, string hash) public returns (bool readFileBool){
+        Read(name, msg.sender, now);
+        return true;
+    }
  
     // Who is allowed to save receipents for a file? onlyOwner?
     function saveRecepientsForApp(bytes32 appName, address[] receipents) public returns (bool saveReceipentsBool){
-        require(files[appName] == true);
+        require(apps[appName] == true);
         for(uint i=0; i<receipents.length; i++){
             saveRecepientForApp(appName, receipents[i]);
         }
@@ -90,6 +96,7 @@ contract KFSContract{
     }
  
     function saveRecepientForApp(bytes32 appName, address receipent) private returns (bool){
+        require(appName_receipents_check[appName][msg.sender] == true);
         appName_receipents[appName].push(receipent);
         appName_receipents_check[appName][receipent] = true;
         return true;
@@ -103,7 +110,7 @@ contract KFSContract{
         return appName_receipents_check[fileName][receipent];
     }
     
-    function createApp(bytes32 appName, string appID) public returns (bool){
+    function createApp(bytes32 appName, string appID) public returns (bool createAppBool){
         require(apps[appName] == false);
         App memory app;
         app.appName = appName;
@@ -127,7 +134,7 @@ contract KFSContract{
         return true;
     }
     
-    function readAllApps() public constant returns(bytes32[] retAppNames, string[] retAppIDs){
+    function getAllApps() public constant returns(bytes32[] retAppNames, string[] retAppIDs){
         bytes32[] localAppNames;
         string[] localAppIDs;
         for(uint i=0; i < allApps.length; i++){
