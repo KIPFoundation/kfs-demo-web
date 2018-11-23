@@ -24,16 +24,55 @@ class SenderView extends Component {
       fileName:'',
       appID:'',
       readNWrite:false,
-      directory:'',
+      selectApp:'',
+      existingApps:[],
+      appNames:[],
       open: false
     }
   }
   componentDidMount(){
     web3.eth.getAccounts().then((accounts, err) => {
-      this.setState({sender: accounts[0]});
-    
+      this.setState({sender: accounts[0]});    
     });
+    this.getAppsOwned();
   }
+  getAppsOwned = async () => {
+    try {
+      const accounts = await web3.eth.getAccounts();
+      let appsLength = await kfs.methods.getAppCount().call({from : accounts[0]});
+      console.log(appsLength);
+      let appNames = [];
+      let appIds = [];
+      if(appsLength!=0) {
+        for(let i=0;i<appsLength;i++) {
+          console.log(i);
+          let app = await kfs.methods.getAppOfIndex(i).call({from:accounts[0]});
+           appNames[i] = app.retAppName; 
+           appIds[i] = app.retAppID;
+        }
+        var bytes32Array = {};
+        appIds.forEach((key, i) => bytes32Array[key] = appNames[i]);
+        console.log(bytes32Array);
+
+        let tempOwnedApps = [];
+        let i=0;
+        for(let appName of appNames) {
+          const text1 = web3.utils.hexToAscii(appName);
+          tempOwnedApps[i] = {
+            key : appName,
+            value : appIds[i++],
+            text :text1
+          };
+        }
+        this.setState({ existingApps : tempOwnedApps , appNames : bytes32Array  });
+      }
+      else {
+        
+      }
+    } catch(err){
+      console.log(err);
+    }
+}
   mimCheck = (file) => {
     // const Unixfs = require('ipfs-unixfs')
     // const {DAGNode} = require('ipld-dag-pb')
@@ -59,20 +98,11 @@ class SenderView extends Component {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
       else  if(this.state.readNWrite) {
-        if(this.state.appID === '') {
-          this.setState({hashMessage:'Please enter file name',visible:true,alert:'KFS Alert'});
+        if(this.state.selectApp === '') {
+          this.setState({hashMessage:'Please choose App name',visible:true,alert:'KFS Alert'});
         }
         else {
-          const appIdUrl = 'http://204.48.21.88:3000/createAppID/'+this.state.appID;
-          axios.get(appIdUrl)
-          .then( response => {
-            if(response.data === 'false') {
-              this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
-            }
-            else {
-              const appIDHash = response.data;
-              console.log(this.state.appID+" : "+response.data);
-              const updateURL = 'http://204.48.21.88:3000/update?appID='+appIDHash+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+              const updateURL = 'http://204.48.21.88:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
               '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
               console.log(updateURL);
               axios.get(updateURL)
@@ -83,7 +113,7 @@ class SenderView extends Component {
                 }
                 else {
                   console.log(response.data);
-                  this.setState({open:true,fileName:this.state.appID,hashMessage:appIDHash});
+                  this.setState({open:true,hashMessage:response.data});
                 }
               })
               .catch(error => {
@@ -91,12 +121,7 @@ class SenderView extends Component {
                 this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
               });
             }
-          })
-          .catch(error => {
-            this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
-          });
         }
-      }
       else {
         const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
@@ -121,25 +146,15 @@ class SenderView extends Component {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
       else if(this.state.readNWrite) {
-        if(this.state.appID === '') {
+        if(false) {
           this.setState({hashMessage:'Please enter file name',visible:true,alert:'KFS Alert'});
         }
         else {
-          const appIdUrl = 'http://204.48.21.88:3000/createAppID/'+this.state.appID;
-          axios.get(appIdUrl)
-          .then( response => {
-            if(response.data === 'false') {
-              this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
-            }
-            else {
-              const appIDHash = response.data;
-              console.log('App ID : ',appIDHash);
               const formData = new FormData();
               formData.append('file', this.state.uploadedFile);
-              formData.append('appID', appIDHash);
+              formData.append('appID', this.state.selectApp);
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-              console.log('http://204.48.21.88:3000/upload/update?', formData);
               axios.post('http://204.48.21.88:3000/upload/update?', formData)
               .then( response => {
                 if(response.data === 'false') {
@@ -147,50 +162,56 @@ class SenderView extends Component {
                 }
                 else {
                   console.log(response.data);
-                  // this.setState({hashMessage:appIDHash,fileName:this.state.appID,open:true,visible:false})
+                  this.setState({hashMessage:response.data,open:true,visible:false})
                 }
               })
               .catch(error => {
                 this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
               });
             }
+          }
+        else {
+          const data = new FormData();
+          data.append('file', this.state.uploadedFile);
+          data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
+          data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+          console.log(data);
+          axios.post('http://204.48.21.88:3000/upload', data)
+          .then( response => {
+            if(response.data === 'false') {
+              this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+            }
+            else {
+              this.setState({hashMessage:response.data, open:true,visible:false})
+            }
           })
           .catch(error => {
             this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
           });
         }
-      }
-      else {
-        const data = new FormData();
-        data.append('file', this.state.uploadedFile);
-        data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
-        data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-        console.log(data);
-        axios.post('http://204.48.21.88:3000/upload', data)
-        .then( response => {
-          if(response.data === 'false') {
-            this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
-          }
-          else {
-            this.setState({hashMessage:response.data, open:true,visible:false})
-          }
-        })
-        .catch(error => {
-          this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
-        });
-       }
     }
 
   saveToBC = async() => {
     try{
-      await kfs.methods.saveFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage).send({
-        from: this.state.sender
-      });
-      this.setState({open:false,hashMessage:'Your File with name'+this.state.fileName+'has been saved to Blockchain'+this,visible:true,alert:'KFS Alert'})
+      if(!this.state.readNWrite) {
+        await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage).send({
+          from: this.state.sender
+        });
+      }
+      else {
+        console.log(this.state.appNames);
+        console.log(this.state.appNames[this.state.selectApp]+":"+this.state.selectApp+":"+this.state.hashMessage);
+        await kfs.methods.updateApp(this.state.appNames[this.state.selectApp],this.state.selectApp,this.state.hashMessage).send({
+          from: this.state.sender
+        });
+      }
+      this.setState({open:false,hashMessage:'Your File has been saved to Blockchain',visible:true,alert:'KFS Alert'})
     }catch(e) {
       console.log(e);
     }
   }
+
+
   close = () => this.setState({ open: false });
   render() {
     const mimes = ['text/plain','text/html','image/jpeg','image/png'];
@@ -249,15 +270,12 @@ class SenderView extends Component {
                         this.setState({readNWrite: !this.state.readNWrite})
                       } 
                       checked={this.state.readNWrite} />
-                       <br />
+                       <br /><br />
                     {this.state.readNWrite ? 
                       <Form.Field>
-                        <h4>Choose file name to save with</h4>
-                        <Input style={{ width: "100%" }} 
-                        name="appID"
-                        value={this.state.appID}
-                        onChange={event => this.setState({appID: event.target.value})}
-                      />
+                         <Dropdown className="form-control"  placeholder="Select App" value={this.state.selectApp}
+                        onChange={ (e,data) => this.setState({selectApp: data.value})}
+                        fluid selection options={this.state.existingApps} />
                       </Form.Field> 
                       :
                       ""
@@ -277,7 +295,8 @@ class SenderView extends Component {
                     <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
                   </Form>
                 :
-                <Form encType="multipart/form-data" method="post">
+                // file upload
+                <Form encType="multipart/form-data" method="post">      
                     <Form.Field>
                       <h4>Your address</h4>
                       <Input disabled size="large" name="senderPub" style={{ width: "100%"}}
@@ -303,15 +322,12 @@ class SenderView extends Component {
                         this.setState({readNWrite: !this.state.readNWrite})
                       } 
                       checked={this.state.readNWrite} />
-                       <br />
+                       <br /><br />
                       {this.state.readNWrite ?  
                       <Form.Field>
-                        <h4>Choose file name to save with</h4>
-                        <Input style={{ width: "100%" }} 
-                        name="appID"
-                        value={this.state.appID}
-                        onChange={event => this.setState({ appID: event.target.value})}
-                      />
+                      <Dropdown className="form-control"  placeholder="Select App" value={this.state.selectApp}
+                        onChange={ (e,data) => this.setState({selectApp: data.value})}
+                        fluid selection options={this.state.existingApps} />
                       </Form.Field> 
                       :
                       ""
@@ -344,9 +360,10 @@ class SenderView extends Component {
           <Modal.Content>
             
             <Input style={{width:'70%'}} label={this.state.readNWrite ? 'KFS APP ID' : 'KFS FILE ID'} disabled type="text" value={this.state.hashMessage}/><br /><br />
-            <Input style={{width:'70%'}} label="Enter File Name" 
+            {!this.state.readNWrite ? <Input style={{width:'70%'}} label="Enter File Name" 
             onChange={event => this.setState({fileName:event.target.value})} 
-            value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/>
+            value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/> 
+            : ''}
             
           </Modal.Content>
           <Modal.Actions>

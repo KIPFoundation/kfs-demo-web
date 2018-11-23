@@ -1,9 +1,10 @@
 import React, { Component } from 'react';
-import { Button, Form, Radio, Input, Message, Grid ,Image} from 'semantic-ui-react';
+import { Button, Form, Radio, Input, Message, Dropdown ,Grid ,Image} from 'semantic-ui-react';
 import logo from './logo.svg';
 import './App.css';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
+import kfs from './ethereum/kfs.js'
 
 class ReceiverView extends Component {
 
@@ -17,6 +18,7 @@ class ReceiverView extends Component {
       source:'',
       visible:false,
       readOnly:false,
+      existingApps:[],
       alert:''
     }
   }
@@ -26,8 +28,42 @@ class ReceiverView extends Component {
     web3.eth.getAccounts().then((accounts, err) => {
       this.setState({receipent: accounts[0]});    
     });
+    this.getAppsOwned();
   }
 
+  getAppsOwned = async () => {
+    try {
+      const accounts = await web3.eth.getAccounts();
+      let appsLength = await kfs.methods.getAppCount().call({from : accounts[0]});
+      console.log(appsLength);
+      let appNames = [];
+      let appIds = [];
+      if(appsLength!=0) {
+        for(let i=0;i<appsLength;i++) {
+          let app = await kfs.methods.getAppOfIndex(i).call({from:accounts[0]});
+           appNames[i] = app.retAppName; 
+           appIds[i] = app.retAppID;
+        }
+        // const appNames = apps.retAppNames;  //['QmPKJ1vdAXu5FfuCFrhKsLWE4QLUG7z7V4uD5ELDwNvWu2','QmNz8vWHWpHVndTxyLFjmWewPGnmYNLGGYzpGLiMocZYZH'];
+        // const appIds = apps.retAppIDs; //['First App','Pathan App'];
+        let tempOwnedApps = [];
+        let i=0;
+        for(let appName of appNames) {
+          tempOwnedApps[i] = {
+            key : appName,
+            value : appIds[i++],
+            text : web3.utils.hexToAscii(appName)
+          };
+        }
+        this.setState({ existingApps : tempOwnedApps  });
+      }
+      else {
+        
+      }
+    } catch(err){
+      console.log(err);
+    }
+}
   handleDismiss = () => {
     this.setState({ visible: false });
   }
@@ -90,13 +126,21 @@ class ReceiverView extends Component {
                       } 
                       checked={this.state.readOnly} />
                       <br /><br />
-                  <Form.Field>
-                    <h4>Enter KFS file id</h4>
-                    <Input style={{ width: "100%" }} size="large"
-                    value={this.state.hashID}
-                    onChange={event => this.setState({ hashID: event.target.value})}
-                    />
-                  </Form.Field>
+                      {this.state.readOnly ? 
+                        <Form.Field>
+                        <h4>Enter KFS file id</h4>
+                        <Input style={{ width: "100%" }} size="large"
+                        value={this.state.hashID}
+                        onChange={event => this.setState({ hashID: event.target.value})}
+                        />
+                      </Form.Field>
+                      :
+                      <Form.Field>
+                         <Dropdown className="form-control"  placeholder="Select App" value={this.state.hashID}
+                        onChange={ (e,data) => this.setState({hashID: data.value})}
+                        fluid selection options={this.state.existingApps} />
+                      </Form.Field> 
+                    }
                   { this.state.visible ? 
                     <Form.Field>
                       <Message positive
