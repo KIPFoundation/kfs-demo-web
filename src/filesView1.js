@@ -14,7 +14,9 @@ class FilesView1 extends React.Component {
       content:'',
       source:'',
       receipent:'',
-      loading:false
+      loading:false,
+      isEmpty:false,
+      xml:''
     }
   }
   async componentDidMount() {
@@ -38,14 +40,19 @@ class FilesView1 extends React.Component {
       .then( response => {
         const returnType = response.headers['content-type'];
         console.log(returnType);
-          if(returnType === 'text/plain' || returnType === 'text/html') {
+          if(returnType == 'text/plain' || returnType == 'text/html') {
             this.setState({content:response.data,plainContent:true,imageContent:false,loading:false});
           }
-          else if(returnType === 'image/jpeg' || returnType === 'image/jpg' || returnType === 'image/png' || returnType === 'image/gif') {
+          else if(returnType == 'image/jpeg' || returnType == 'image/jpg' || returnType == 'image/png' || returnType == 'image/gif') {
             this.setState({source:url,imageContent:true,plainContent:false,loading:false});
           }
           else {
-              console.log(response.data);
+            if(returnType == 'text/xml; charset=utf-8') {
+              this.setState({xml : response.data , loading:false});
+            }
+            else {
+             console.log(response.data);
+            }
           }
       })
       .catch((error) => {
@@ -114,16 +121,23 @@ class FilesView1 extends React.Component {
         </Card>
       );
     }
-    this.setState({filesExisting : files});
+    if(files.length == 0) {
+      this.setState({isEmpty : true});
+    }
+    else {
+      this.setState({filesExisting : files});
+    }
   }
 
 render() {
   return (
+    <div>
+    {this.state.isEmpty ? <center><h1 style={{color:'white',marginTop:'20%'}}>Your Directory is Empty</h1></center> : 
     <div style={{display:'flex',height:'700px'}}>
       <div style={{overflow:'auto',margin:'4% 20% 1% 4%',width:'35%'}}>
         <Card.Group itemsPerRow="1">
-        {this.state.filesExisting}
-      </Card.Group>
+          {this.state.filesExisting}
+        </Card.Group>
       </div>
       <div style={{margin:'4% 1% 2% 0%',padding:'2%',width:'35%'}}>
         {this.state.loading ? 
@@ -140,9 +154,19 @@ render() {
             <center><h2>File Content</h2></center>
             <div style={{margin:'2%'}}>{this.state.content}</div>
           </div> : ''}
+          {this.state.xml!=='' ? 
+          <div style={{backgroundColor:'#ffffff',padding:'2%'}}>
+              <center><h2>XML Content</h2></center>
+              <div style={{margin:'2%'}}>
+                <xmp>
+                  {this.state.xml}
+                </xmp>
+              </div>
+          </div> : ''}
         </div>
         }
       </div>
+    </div>}
     </div>
   )}
 }

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, Form, Radio, Input, Message, Dropdown ,Grid ,Image} from 'semantic-ui-react';
 import logo from './logo.svg';
+import XMLWriter from 'xml-writer';
 import './App.css';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
@@ -19,7 +20,8 @@ class ReceiverView extends Component {
       visible:false,
       readOnly:false,
       existingApps:[],
-      alert:''
+      alert:'',
+      xml:''
     }
   }
 
@@ -92,7 +94,12 @@ class ReceiverView extends Component {
             this.setState({source:url});
           }
           else {
-              this.setState({realContent:response.data,visible:true,alert:'KFS Response'})
+              if(returnType === 'text/xml; charset=utf-8') {
+                this.setState({xml : response.data});
+              }
+              else {
+                this.setState({realContent:response.data,visible:true,alert:'KFS Response'})
+              }
           }
         }
         //this.setState({realContent:response.data,visible:true})
@@ -122,7 +129,7 @@ class ReceiverView extends Component {
                   <Radio toggle
                       label='fetch read only files'
                       onClick={() => 
-                        this.setState({readOnly: !this.state.readOnly})
+                        this.setState({readOnly: !this.state.readOnly,hashID:''})
                       } 
                       checked={this.state.readOnly} />
                       <br /><br />
@@ -156,6 +163,7 @@ class ReceiverView extends Component {
                   <Form.Field>
                     <br />
                     {this.state.source ? <Image style={{width:'100%'}} src={this.state.source} /> : ''}
+                    {this.state.xml!='' ? <xmp style={{color:'white'}} >{this.state.xml}</xmp> :''}
                   </Form.Field>
                 </Form>
               </Grid.Column>

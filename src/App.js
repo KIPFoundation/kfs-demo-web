@@ -8,6 +8,7 @@ import ReceiverView from './receiverView';
 import FilesView from './filesView1';
 import CreateApp from './createApp';
 import Logo from './kipLogo.png';
+import XmlForm from './xmlForm';
 
 
 class App extends Component {
@@ -17,11 +18,13 @@ class App extends Component {
       tab1:'black',
       tab2:'black',
       tab3: 'black',
-      tab4:'black'
+      tab4:'black',
+      tab5:'black'
     }
   }
 
   render() {
+    console.log(this.context.router);
     return (
         <div style={{backgroundColor:"black"}}>
           <div>
@@ -36,10 +39,11 @@ class App extends Component {
               <Grid.Row color='black' textAlign='center'>
                 <Grid.Column></Grid.Column>
                 <Grid.Column></Grid.Column>
-                <Grid.Column color={this.state.tab1} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab1:'grey', tab2:'black', tab3:'black',tab4:'black',})} to="/sender"><p className={this.state.tab1 === 'grey' ? 'active':'non-active'}>Sender's View</p></Link></Grid.Column>          
-                <Grid.Column color={this.state.tab2} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab2:'grey', tab3:'black', tab1:'black',tab4:'black',})}  to="/receiver"><p className={this.state.tab2 === 'grey' ? 'active':'non-active'}>Receiver's View</p></Link></Grid.Column>
-                <Grid.Column color={this.state.tab3} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab3:'grey', tab1:'black', tab2:'black',tab4:'black',})}  to="/files"><p className={this.state.tab3 === 'grey' ? 'active':'non-active'}>File Directory</p></Link></Grid.Column>
-                <Grid.Column color={this.state.tab4} ><Link onClick={() => this.setState({tab4:'grey', tab1:'black',tab2:'black', tab3:'black'})} to="/createApp"><p className={this.state.tab4 === 'grey' ? 'active':'non-active'}>Create App</p></Link></Grid.Column>          
+                <Grid.Column color={this.state.tab1} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab1:'grey', tab2:'black', tab3:'black',tab4:'black',tab5:'black'})} to="/sender"><p className={this.state.tab1 === 'grey' ? 'active':'non-active'}>Sender's View</p></Link></Grid.Column>          
+                <Grid.Column color={this.state.tab2} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab2:'grey', tab3:'black', tab1:'black',tab4:'black',tab5:'black'})}  to="/receiver"><p className={this.state.tab2 === 'grey' ? 'active':'non-active'}>Receiver's View</p></Link></Grid.Column>
+                <Grid.Column color={this.state.tab3} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab3:'grey', tab1:'black', tab2:'black',tab4:'black',tab5:'black'})}  to="/files"><p className={this.state.tab3 === 'grey' ? 'active':'non-active'}>File Directory</p></Link></Grid.Column>
+                <Grid.Column color={this.state.tab4} style={{borderRight:'1px solid white'}}><Link onClick={() => this.setState({tab4:'grey', tab1:'black',tab2:'black', tab3:'black',tab5:'black'})} to="/createApp"><p className={this.state.tab4 === 'grey' ? 'active':'non-active'}>Create App</p></Link></Grid.Column>   
+                <Grid.Column color={this.state.tab5} ><Link onClick={() => this.setState({tab5:'grey',tab4:'black', tab1:'black',tab2:'black', tab3:'black'})} to="/xmlForm"><p className={this.state.tab5 === 'grey' ? 'active':'non-active'}>Send as XML</p></Link></Grid.Column>                 
                 <Grid.Column></Grid.Column>
                 <Grid.Column></Grid.Column>
               </Grid.Row>
@@ -48,6 +52,7 @@ class App extends Component {
             <Route path="/receiver" component={ReceiverView} />
             <Route path="/files" component={FilesView} />
             <Route path="/createApp" component={CreateApp} />
+            <Route path="/xmlForm" component={XmlForm} />
           </div>
       </Router>
       </div>
