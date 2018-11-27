@@ -129,13 +129,14 @@ contract KFSContract{
         Update memory update = Update({updater: msg.sender, timeOfUpdate: now, hash: fileHash});
         App storage app = allApps[appName_index[appName]];
         app.kfshashes.push(fileHash);
-        appOwner_app[msg.sender].push(app);
+        appOwner_app[recipient].push(app);
+        appName_recipients_check[appName][recipient] = true;
         appName_Updater[appName].push(update);
         emit AppUpdated(appName, msg.sender, now, fileHash);
         return true;
     }
     
-    function checkAppOfIndex(bytes32 appName) public constant returns (App retApp){
+    function getAppWithAppName(bytes32 appName) public constant returns (App retApp){
         App storage app = allApps[appName_index[appName]];
         return app;
     }
