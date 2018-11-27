@@ -3,7 +3,8 @@ import kfsContract from './build/KFSContract.json';
 
 const instance = new web3.eth.Contract(
   JSON.parse(kfsContract.interface),
-   '0x288a96920d4610a9f13b56c1a49749829446ff76' // -- http://142.93.251.210:8991/
+   '0x696195f022c9cb32345f6583a4e7067638d9270b' // -- http://142.93.251.210:8991/
+  //  '0xfb5ada4ac273a679490519ad46bfe3562a30b7b3' // --  http://142.93.177.142:8991/
 );
 
 export default instance;

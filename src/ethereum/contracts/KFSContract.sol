@@ -23,16 +23,16 @@ contract KFSContract{
     App[] public allApps;
    
     address owner;
-    mapping(bytes32 => bool) files;
-    mapping(bytes32 => bool) apps;
+    mapping(bytes32 => bool) fileName_check;
+    mapping(bytes32 => bool) appName_check;
     mapping(address => File[]) fileOwner_file; // Maybe we can take this inside struct itself
     mapping(address => App[]) appOwner_app; // Maybe we can take this inside struct itself
-    mapping(bytes32 => address[]) appName_receipents;
+    // mapping(bytes32 => address[]) appName_recipients;
     mapping(bytes32 => uint) appName_index;
-    mapping(bytes32 => mapping(address => bool)) appName_receipents_check;
+    mapping(bytes32 => mapping(address => bool)) appName_recipients_check;
     mapping(bytes32 => Update[]) appName_Updater; // Maybe we can take this inside struct itself
     
-    event AppUpdated(bytes32 appName, string appID, address updater, uint updationDate, string latestHash);
+    event AppUpdated(bytes32 appName, address updater, uint updationDate, string latestHash);
     event Read(bytes32 name, address reader, uint timeofRead);
     
     modifier onlyOwner{
@@ -44,11 +44,12 @@ contract KFSContract{
         owner = msg.sender;
     }
  
-    function createFile(bytes32 _fileName, string _fileHash) public returns (bool saveFileBool){
-        require(files[_fileName] == false);
+    function createFile(bytes32 _fileName, string _fileHash, address recipient) public returns (bool saveFileBool){
+        require(fileName_check[_fileName] == false);
         File memory file = File({fileName: _fileName, kfsHash: _fileHash});
         fileOwner_file[msg.sender].push(file);
-        files[_fileName] = true;
+        fileOwner_file[recipient].push(file);
+        fileName_check[_fileName] = true;
         allFiles.push(file); // This can be removed, considering gas optimization, and only fileName can be pushed
         return true;
     }
@@ -86,50 +87,51 @@ contract KFSContract{
         return true;
     }
  
-    // Who is allowed to save receipents for a file? onlyOwner?
-    function saveRecepientsForApp(bytes32 appName, address[] receipents) public returns (bool saveReceipentsBool){
-        require(apps[appName] == true && appName_receipents_check[appName][msg.sender] == true);
-        for(uint i=0; i<receipents.length; i++){
-            saveRecepientForApp(appName, receipents[i]);
+    // Who is allowed to save recipients for a file? onlyOwner?
+    function saveRecepientsForApp(bytes32 appName, address[] recipients) public returns (bool saverecipientsBool){
+        require(appName_check[appName] == true && appName_recipients_check[appName][msg.sender] == true);
+        for(uint i=0; i<recipients.length; i++){
+            saveRecipientForApp(appName, recipients[i]);
         }
         return true;
     }
  
-    function saveRecepientForApp(bytes32 appName, address receipent) private returns (bool){
-        appName_receipents[appName].push(receipent);
-        appName_receipents_check[appName][receipent] = true;
+    function saveRecipientForApp(bytes32 appName, address recipient) private returns (bool){
+        // appName_recipients[appName].push(recipient);
+        appName_recipients_check[appName][recipient] = true;
         return true;
     }
  
-    function getAppReceipents(bytes32 appName) public constant returns (address[] retReceipents){
-        return appName_receipents[appName];
-    }
+    // function getAppRecipients(bytes32 appName) public constant returns (address[] retrecipients){
+    //     return appName_recipients[appName];
+    // }
     
-    function checkAppReceipent(bytes32 fileName, address receipent) public constant returns (bool){
-        return appName_receipents_check[fileName][receipent];
+    function checkAppRecipient(bytes32 fileName, address recipient) public constant returns (bool){
+        return appName_recipients_check[fileName][recipient];
     }
     
     function createApp(bytes32 appName, string appID) public returns (bool createAppBool){
-        require(apps[appName] == false);
+        require(appName_check[appName] == false);
         App memory app;
         app.appName = appName;
         app.appID = appID;
-        apps[appName] = true;
-        saveRecepientForApp(appName, msg.sender);
-        appName_receipents_check[appName][msg.sender] = true;
+        appName_check[appName] = true;
+        saveRecipientForApp(appName, msg.sender);
+        appName_recipients_check[appName][msg.sender] = true;
         appOwner_app[msg.sender].push(app);
         appName_index[appName] = getAppCount();
         allApps.push(app);
         return true;
     }
     
-    function updateApp(bytes32 appName, string appID, string fileHash) public returns (bool){
-        require(appName_receipents_check[appName][msg.sender] == true);
+    function updateApp(bytes32 appName, string fileHash, address recipient) public returns (bool){
+        require(appName_recipients_check[appName][msg.sender] == true);
         Update memory update = Update({updater: msg.sender, timeOfUpdate: now, hash: fileHash});
         App storage app = allApps[appName_index[appName]];
         app.kfshashes.push(fileHash);
+        appOwner_app[msg.sender].push(app);
         appName_Updater[appName].push(update);
-        emit AppUpdated(appName, appID, msg.sender, now, fileHash);
+        emit AppUpdated(appName, msg.sender, now, fileHash);
         return true;
     }
     
