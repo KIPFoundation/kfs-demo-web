@@ -7,7 +7,7 @@ contract KFSContract{
         bytes32 fileName;
         string kfsHash;
     }
-    File[] public allFiles;
+    File[] public allFiles; // To optimize gas, only fileName can be pushed and a mapping(bytes32 => File) could be created down the line
     
     struct Update{
         address updater;
@@ -20,13 +20,13 @@ contract KFSContract{
         string appID;
         string[] kfshashes;
     }
-    App[] public allApps;
+    App[] public allApps; // To optimize gas, only appName can be pushed and a mapping(bytes32 => File) could be created down the line
    
     address owner;
     mapping(bytes32 => bool) fileName_check;
     mapping(bytes32 => bool) appName_check;
-    mapping(address => File[]) fileOwner_file; // Maybe we can take this inside struct itself
-    mapping(address => App[]) appOwner_app; // Maybe we can take this inside struct itself
+    mapping(address => File[]) fileOwner_file;
+    mapping(address => App[]) appOwner_app;
     // mapping(bytes32 => address[]) appName_recipients;
     mapping(bytes32 => uint) appName_index;
     mapping(bytes32 => mapping(address => bool)) appName_recipients_check;
@@ -89,7 +89,6 @@ contract KFSContract{
  
     // Who is allowed to save recipients for a file? onlyOwner?
     function saveRecepientsForApp(bytes32 appName, address[] recipients) public returns (bool saverecipientsBool){
-        require(appName_check[appName] == true && appName_recipients_check[appName][msg.sender] == true);
         for(uint i=0; i<recipients.length; i++){
             saveRecipientForApp(appName, recipients[i]);
         }
@@ -97,6 +96,7 @@ contract KFSContract{
     }
  
     function saveRecipientForApp(bytes32 appName, address recipient) private returns (bool){
+        require(appName_check[appName] == true && appName_recipients_check[appName][msg.sender] == true);
         // appName_recipients[appName].push(recipient);
         appName_recipients_check[appName][recipient] = true;
         return true;
@@ -145,16 +145,6 @@ contract KFSContract{
         App storage app = allApps[appName_index[appName]];
         return app.kfshashes;
     }
-    
-    // function getAllApps() public constant returns(bytes32[] retAppNames, string[] retAppIDs){
-    //     bytes32[] localAppNames;
-    //     string[] localAppIDs;
-    //     for(uint i=0; i < allApps.length; i++){
-    //         localAppNames.push(allApps[i].appName);
-    //         localAppIDs.push(allApps[i].appID);
-    //     }
-    //     return (localAppNames, localAppIDs);   
-    // }
     
     function getUpdaterDetails(bytes32 appName) public constant returns(Update[] retUpdaters){
         return appName_Updater[appName];
