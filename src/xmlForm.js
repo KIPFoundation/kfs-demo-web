@@ -16,11 +16,15 @@ class XmlForm extends Component {
      dob:'',
      cno:'',
      existingReceipents:[],
+     existingApps:[],
      hashMessage:'',
      open:false,
      fileName:'',
      visible:false,
-     alert:''
+     readNWrite:false,
+     alert:'',
+     selectApp:'',
+     appNames:[]
     }
   }
 
@@ -41,24 +45,55 @@ class XmlForm extends Component {
           text :'Employee - '+i
         };
       }
-      this.setState({existingReceipents : tempReceipents})
+      this.setState({existingReceipents : tempReceipents});
+      this.getAppsOwned();
   }
 
-  parseToXml = () => {
-    // let dateLiterals = (this.state.dob).split('-');
-    // let dateFormat = dateLiterals[1]+"/"+dateLiterals[2]+"/"+dateLiterals[0];
-    // let current_date = new Date(dateFormat).getTime();
-    // const locale = "en-us";
-    // const month = current_date.toLocaleString(locale, { month: "short" });
-    // const dateOfBirth = current_date.getDate() + "-" + month + "-" + current_date.getFullYear();
+  getAppsOwned = async () => {
+    try {
+      const accounts = await web3.eth.getAccounts();
+      let appsOfOwner = await kfs.methods.getAppsOfOwner().call({from : accounts[0]});
+      console.log(appsOfOwner[0].appName);
+      let appNames = [];
+      let appIds = [];
+      const appsLength = appsOfOwner.length;
+      if(appsLength!=0) {
+        for(let i=0;i<appsLength;i++) {
+          console.log(i);
+           appNames[i] = appsOfOwner[i].appName; 
+           appIds[i] = appsOfOwner[i].appID;
+        }
+        var bytes32Array = {};
+        appIds.forEach((key, i) => bytes32Array[key] = appNames[i]);
+        console.log(bytes32Array);
 
+        let tempOwnedApps = [];
+        let i=0;
+        for(let appName of appNames) {
+          let text1 = web3.utils.hexToAscii(appName);
+          tempOwnedApps[i] = {
+            key : appName,
+            value : appIds[i++],
+            text : text1
+          };
+        }
+        this.setState({ existingApps : tempOwnedApps , appNames : bytes32Array  });
+      }
+    } catch(err){
+      console.log(err);
+    }
+}
+
+  parseToXml = () => {
+    let dateLiterals = (this.state.dob).split('-');
+    let dateFormat = dateLiterals[1]+"/"+dateLiterals[2]+"/"+dateLiterals[0];
     var xw = new XMLWriter(true);
     xw.startDocument( );
     xw.startElement( 'PersonalInfo' );
        
             xw.writeElement('UserName',this.state.userName);
        
-            xw.writeElement('DateOfBirth',this.state.dob);
+            xw.writeElement('DateOfBirth',dateFormat);
        
             xw.writeElement('ContactNumber',this.state.cno);
 
@@ -68,37 +103,67 @@ class XmlForm extends Component {
     var data = new Blob([content], {
         type: 'text/xml'
     });
-     this.setState({xml : content})
-    const formData = new FormData();
-    formData.append('file', data);
-    formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
-    formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-    console.log(data);
-    axios.post('http://204.48.21.88:3000/upload', formData)
-    .then( response => {
-      if(response.data === 'false') {
-        console.log('false')
-      }
-      else {
-        this.setState({hashMessage : response.data, open : true});
-      }
-    })
-    .catch(error => {
-      console.log(error);
-    });
+
+    if(!this.state.readNWrite) {
+      const formData = new FormData();
+      formData.append('file', data);
+      formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
+      formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+      console.log(data);
+      axios.post('http://204.48.21.88:3000/upload', formData)
+      .then( response => {
+        if(response.data === 'false') {
+          console.log('false')
+        }
+        else {
+          this.setState({hashMessage : response.data, open : true});
+        }
+      })
+      .catch(error => {
+        console.log(error);
+      });
+    }
+    else {
+      const formData = new FormData();
+      formData.append('file', data);
+      formData.append('appID', this.state.selectApp);
+      formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
+      formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+      axios.post('http://204.48.21.88:3000/upload/update?', formData)
+      .then( response => {
+        if(response.data === 'false') {
+          this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
+        }
+        else {
+          console.log(response.data);
+          this.setState({hashMessage:response.data,open:true,visible:false})
+        }
+      })
+      .catch(error => {
+        this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+      });
+    }
   }
 
   saveToBC = async() => {
     try{
-        await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage).send({
+      if(!this.state.readNWrite) {
+        await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
           from: this.state.sender
         });
+      }
+      else {
+        console.log(this.state.appNames);
+        console.log(this.state.appNames[this.state.selectApp]+":"+this.state.receipent+":"+this.state.hashMessage);
+        await kfs.methods.updateApp(this.state.appNames[this.state.selectApp],this.state.hashMessage,this.state.receipent).send({
+          from: this.state.sender
+        });
+      }
       this.setState({open:false,hashMessage:'Your File has been saved to Blockchain',visible:true,alert:'KFS Alert'})
     }catch(e) {
       console.log(e);
     }
   }
-
 
   close = () => this.setState({ open: false });
 
@@ -138,6 +203,22 @@ class XmlForm extends Component {
                         onChange={ (e,data) => this.setState({receipent: data.value})}
                         fluid selection options={this.state.existingReceipents} />
                   </Form.Field> 
+                  {/* <Radio toggle
+                      label='Update App'
+                      onClick={() => 
+                        this.setState({readNWrite: !this.state.readNWrite})
+                      } 
+                      checked={this.state.readNWrite} />
+                       <br /><br />
+                    {this.state.readNWrite ? 
+                      <Form.Field>
+                         <Dropdown className="form-control"  placeholder="Select App" value={this.state.selectApp}
+                        onChange={ (e,data) => this.setState({selectApp: data.value})}
+                        fluid selection options={this.state.existingApps} />
+                      </Form.Field> 
+                      :
+                      ""
+                    } */}
                   { this.state.visible ? 
                     <Form.Field>
                       <Message positive
@@ -162,10 +243,10 @@ class XmlForm extends Component {
           <Modal.Header>Save File ID in Blockchain</Modal.Header>
           <Modal.Content>
             
-            <Input style={{width:'70%'}} label='KFS FILE ID' disabled type="text" value={this.state.hashMessage}/><br /><br />
-            <Input style={{width:'70%'}} label="Enter File Name" 
-             onChange={event => this.setState({fileName:event.target.value})} 
-              value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/> 
+            <Input style={{width:'70%'}} label={this.state.readNWrite ? 'KFS APP ID' : 'KFS FILE ID'} disabled type="text" value={this.state.hashMessage}/><br /><br />
+            {!this.state.readNWrite ? <Input style={{width:'70%'}} label="Enter File Name" 
+            onChange={event => this.setState({fileName:event.target.value})} 
+            value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/> 
             : ''}
             
           </Modal.Content>

@@ -36,19 +36,20 @@ class SenderView extends Component {
     });
     this.getAppsOwned();
   }
+
   getAppsOwned = async () => {
     try {
       const accounts = await web3.eth.getAccounts();
-      let appsLength = await kfs.methods.getAppCount().call({from : accounts[0]});
-      console.log(appsLength);
+      let appsOfOwner = await kfs.methods.getAppsOfOwner().call({from : accounts[0]});
+      console.log(appsOfOwner[0].appName);
       let appNames = [];
       let appIds = [];
+      const appsLength = appsOfOwner.length;
       if(appsLength!=0) {
         for(let i=0;i<appsLength;i++) {
           console.log(i);
-          let app = await kfs.methods.getAppOfIndex(i).call({from:accounts[0]});
-           appNames[i] = app.retAppName; 
-           appIds[i] = app.retAppID;
+           appNames[i] = appsOfOwner[i].appName; 
+           appIds[i] = appsOfOwner[i].appID;
         }
         var bytes32Array = {};
         appIds.forEach((key, i) => bytes32Array[key] = appNames[i]);
@@ -57,22 +58,20 @@ class SenderView extends Component {
         let tempOwnedApps = [];
         let i=0;
         for(let appName of appNames) {
-          const text1 = web3.utils.hexToAscii(appName);
+          let text1 = web3.utils.hexToAscii(appName);
           tempOwnedApps[i] = {
             key : appName,
             value : appIds[i++],
-            text :text1
+            text : text1
           };
         }
         this.setState({ existingApps : tempOwnedApps , appNames : bytes32Array  });
-      }
-      else {
-        
       }
     } catch(err){
       console.log(err);
     }
 }
+
   mimCheck = (file) => {
     // const Unixfs = require('ipfs-unixfs')
     // const {DAGNode} = require('ipld-dag-pb')
@@ -194,14 +193,14 @@ class SenderView extends Component {
   saveToBC = async() => {
     try{
       if(!this.state.readNWrite) {
-        await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage).send({
+        await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
           from: this.state.sender
         });
       }
       else {
         console.log(this.state.appNames);
-        console.log(this.state.appNames[this.state.selectApp]+":"+this.state.selectApp+":"+this.state.hashMessage);
-        await kfs.methods.updateApp(this.state.appNames[this.state.selectApp],this.state.selectApp,this.state.hashMessage).send({
+        console.log(this.state.appNames[this.state.selectApp]+":"+this.state.hashMessage+":"+this.state.receipent);
+        await kfs.methods.updateApp(this.state.appNames[this.state.selectApp],this.state.hashMessage,this.state.receipent).send({
           from: this.state.sender
         });
       }

@@ -27,7 +27,7 @@ class FilesView1 extends React.Component {
   }
 
   renderData = (kfsHash,id) => {
-    this.setState({loading:true});
+    this.setState({loading:true,source:'',xml:'',content:''});
     let url = '';
     if(id == 1) {
       url = 'http://204.48.21.88:3000/appdata/'+kfsHash+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
@@ -62,7 +62,18 @@ class FilesView1 extends React.Component {
 
   renderFiles = async () => {
     const accounts = await web3.eth.getAccounts();
-    const kfsFiles = await kfs.methods.getFilesOfOwner().call({from:accounts[0]});
+    let kfsFilesDup = await kfs.methods.getFilesOfOwner().call({from:accounts[0]});
+    let pieSet = new Set();
+    let kfsFiles = [];
+    let j = 0;
+    for(let i=0;i<kfsFilesDup.length;i++)  {
+      console.log(kfsFilesDup[i]);
+      if(!pieSet.has(kfsFilesDup[i])) {
+        kfsFiles[j] = kfsFilesDup[i];
+        j++;
+        pieSet.add(kfsFiles[i]);
+      }
+    }
     let files = [];
     const kfsFilesLength = kfsFiles.length;
     for(let i=0;i<kfsFilesLength;i++) {
@@ -92,7 +103,18 @@ class FilesView1 extends React.Component {
       );
     }
 
-    const kfsApps = await kfs.methods.getAppsOfOwner().call({from:accounts[0]});
+    const kfsAppsDup = await kfs.methods.getAppsOfOwner().call({from:accounts[0]});
+    let pieSet1 = new Set();
+    let kfsApps = [];
+    let j1 = 0;
+    for(let i=0;i<kfsAppsDup.length;i++)  {
+      console.log(kfsAppsDup[i]);
+      if(!pieSet1.has(kfsAppsDup[i].appName)) {
+        kfsApps[j1] = kfsAppsDup[i];
+        j1++;
+        pieSet1.add(kfsAppsDup[i].appName);
+      }
+    }
     console.log(kfsApps);
     for(let i=0;i<kfsApps.length;i++) {
       const previousHashes = await kfs.methods.checkAppPreviousHashes(kfsApps[i].appName).call({from:accounts[0]});
