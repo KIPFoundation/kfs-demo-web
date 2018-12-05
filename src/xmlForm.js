@@ -24,6 +24,7 @@ class XmlForm extends Component {
      readNWrite:false,
      alert:'',
      selectApp:'',
+     empID:'',
      appNames:[]
     }
   }
@@ -63,10 +64,13 @@ class XmlForm extends Component {
            appNames[i] = appsOfOwner[i].appName; 
            appIds[i] = appsOfOwner[i].appID;
         }
+         
+        //Object of App hashes as keys and App names as values
         var bytes32Array = {};
         appIds.forEach((key, i) => bytes32Array[key] = appNames[i]);
         console.log(bytes32Array);
 
+        //Apps Object for addressing dropdown options 
         let tempOwnedApps = [];
         let i=0;
         for(let appName of appNames) {
@@ -77,6 +81,7 @@ class XmlForm extends Component {
             text : text1
           };
         }
+
         this.setState({ existingApps : tempOwnedApps , appNames : bytes32Array  });
       }
     } catch(err){
@@ -90,7 +95,8 @@ class XmlForm extends Component {
     var xw = new XMLWriter(true);
     xw.startDocument( );
     xw.startElement( 'PersonalInfo' );
-       
+            xw.writeElement('Employee ID',this.state.empID);
+
             xw.writeElement('UserName',this.state.userName);
        
             xw.writeElement('DateOfBirth',dateFormat);
@@ -148,6 +154,7 @@ class XmlForm extends Component {
   saveToBC = async() => {
     try{
       if(!this.state.readNWrite) {
+        console.log(web3.utils.fromAscii(this.state.fileName)+"-"+this.state.hashMessage+"-"+this.state.receipent+"-"+this.state.sender)
         await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
           from: this.state.sender
         });
@@ -176,6 +183,13 @@ class XmlForm extends Component {
                 <Grid.Column width={16}>
                   <Form onSubmit={this.onSubmit}>
                   <br /><br />
+                  <Form.Field>
+                    <h4>Employee ID</h4>
+                    <Input style={{ width: "100%" }} size="large"
+                    value={this.state.empID}
+                    onChange={event => this.setState({ empID: event.target.value})}
+                    />
+                  </Form.Field>
                   <Form.Field>
                     <h4>User Name</h4>
                     <Input style={{ width: "100%" }} size="large"
