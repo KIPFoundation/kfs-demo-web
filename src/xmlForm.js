@@ -3,9 +3,8 @@ import XMLWriter from 'xml-writer';
 import { Button, Form, Radio, Input, Message, Dropdown ,Grid ,Modal} from 'semantic-ui-react';
 import './App.css';
 import web3 from './ethereum/web3.js';
-import axios from 'axios';
 import kfs from './ethereum/kfs.js';
-
+import axios from 'axios';
 
 class XmlForm extends Component {
 

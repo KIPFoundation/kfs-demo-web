@@ -63,6 +63,7 @@ class FilesView1 extends React.Component {
   renderFiles = async () => {
     const accounts = await web3.eth.getAccounts();
     let kfsFilesDup = await kfs.methods.getFilesOfOwner().call({from:accounts[0]});
+    console.log(kfsFilesDup);
     let pieSet = new Set();
     let kfsFiles = [];
     let j = 0;
@@ -77,11 +78,9 @@ class FilesView1 extends React.Component {
     let files = [];
     const kfsFilesLength = kfsFiles.length;
     for(let i=0;i<kfsFilesLength;i++) {
-      // const gateway = 'http://204.48.21.88:8080/ipfs/'+kfsFiles[i].kfsHash;
       files[i] = (
         <Card key={i}>
           <Card.Content>
-            {/* <p style={{float:'right'}}>23-Nov-2018</p> */}
             <Card.Header>{web3.utils.hexToAscii(kfsFiles[i].fileName)}</Card.Header>
             <Card.Meta>{kfsFiles[i].kfsHash}</Card.Meta>
           </Card.Content> 
@@ -93,7 +92,7 @@ class FilesView1 extends React.Component {
               </Button>
               <Button basic color='black'
                 onClick={() => {
-                  window.location = 'http://204.48.21.88:8080/ipfs/'+kfsFiles[i].kfsHash;
+                  window.location = 'http://204.48.21.88:3000/ipfs/'+kfsFiles[i].kfsHash;
                 }} >
                 Open In Gateway
               </Button>

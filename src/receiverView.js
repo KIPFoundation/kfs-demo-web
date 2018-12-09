@@ -98,7 +98,12 @@ class ReceiverView extends Component {
                 this.setState({xml : response.data});
               }
               else {
-                this.setState({realContent:response.data,visible:true,alert:'KFS Response'})
+                if(returnType == 'text/plain; charset=utf-8') {
+                  console.log(response.data);
+                }
+                else {
+                  this.setState({realContent:response.data,visible:true,alert:'KFS Response'})
+                }
               }
           }
         }
