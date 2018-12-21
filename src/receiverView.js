@@ -1,7 +1,5 @@
 import React, { Component } from 'react';
-import { Button, Form, Radio, Input, Message, Dropdown ,Grid ,Image} from 'semantic-ui-react';
-import logo from './logo.svg';
-import XMLWriter from 'xml-writer';
+import { Button, Form, Radio, Input, Message, Dropdown ,Grid ,Image , Modal} from 'semantic-ui-react';
 import './App.css';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
@@ -21,6 +19,8 @@ class ReceiverView extends Component {
       readOnly:false,
       existingApps:[],
       alert:'',
+      videoSource:false,
+      VideoSource:'',
       xml:''
     }
   }
@@ -73,7 +73,8 @@ class ReceiverView extends Component {
   getContent = () => {
     this.setState({source:''});
     let url;
-    if(!this.state.readOnly) {
+    // if(!this.state.readOnly) {
+    if(false) {
       url = 'http://204.48.21.88:3000/appdata/'+this.state.hashID+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
     }
     else {
@@ -100,6 +101,9 @@ class ReceiverView extends Component {
               else {
                 if(returnType == 'text/plain; charset=utf-8') {
                   console.log(response.data);
+                }
+                else if(returnType == 'video/mp4') {
+                  this.setState({VideoSource:url,videoSource:true,open:true});
                 }
                 else {
                   this.setState({realContent:response.data,visible:true,alert:'KFS Response'})
@@ -131,7 +135,7 @@ class ReceiverView extends Component {
                     onChange={event => this.setState({ receipent: event.target.value})}
                     />
                   </Form.Field>
-                  <Radio toggle
+                  {/* <Radio toggle
                       label='fetch read only files'
                       onClick={() => 
                         this.setState({readOnly: !this.state.readOnly,hashID:''})
@@ -152,7 +156,14 @@ class ReceiverView extends Component {
                         onChange={ (e,data) => this.setState({hashID: data.value})}
                         fluid selection options={this.state.existingApps} />
                       </Form.Field> 
-                    }
+                    } */}
+                     <Form.Field>
+                        <h4>Enter KFS file id</h4>
+                        <Input style={{ width: "100%" }} size="large"
+                        value={this.state.hashID}
+                        onChange={event => this.setState({ hashID: event.target.value})}
+                        />
+                      </Form.Field>
                   { this.state.visible ? 
                     <Form.Field>
                       <Message positive
@@ -169,12 +180,26 @@ class ReceiverView extends Component {
                     <br />
                     {this.state.source ? <Image style={{width:'100%'}} src={this.state.source} /> : ''}
                     {this.state.xml!='' ? <xmp style={{color:'white'}} >{this.state.xml}</xmp> :''}
+                    {this.state.videoSource? <video width="320" height="240" controls>
+                                                <source src={this.state.VideoSource} type="video/mp4" />
+                                                Your browser does not support the video tag.
+                                              </video> :''}
                   </Form.Field>
                 </Form>
               </Grid.Column>
             </Grid.Row>
           </Grid>
         </header>
+        {/* {this.state.videoSource? 
+        <Modal
+        open={this.state.open}>
+          <Modal.Description>
+            <video width="500" height="500" controls>
+              <source src={this.state.VideoSource} type="video/mp4" />
+              Your browser does not support the video tag.
+            </video>
+          </Modal.Description>
+        </Modal> : ''} */}
       </div>
     );
   }

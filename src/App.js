@@ -5,10 +5,11 @@ import './App.css';
 import { BrowserRouter as Router, Route, Link } from "react-router-dom";
 import SenderView from './senderView';
 import ReceiverView from './receiverView';
-import FilesView from './filesView1';
+import FilesView from './kfsDrive.js';
 import CreateApp from './createApp';
 import Logo from './kipLogo.png';
 import XmlForm from './xmlForm';
+import Dashboard from './newDashboard.js';
 
 
 class App extends Component {
@@ -51,7 +52,7 @@ class App extends Component {
             <Route path="/sender" component={SenderView} />
             <Route path="/receiver" component={ReceiverView} />
             <Route path="/files" component={FilesView} />
-            <Route path="/createApp" component={CreateApp} />
+            <Route path="/createApp" component={Dashboard} />
             <Route path="/xmlForm" component={XmlForm} />
           </div>
       </Router>

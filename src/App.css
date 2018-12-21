@@ -8,33 +8,47 @@
 }
 
 .App-header {
-  background-color: #282c34;
+  background-color:white;
   min-height: 100vh;
   display: flex;
   flex-direction: column;
   align-items: center;
   /* justify-content: center; */
   font-size: calc(10px + 2vmin);
-  color: white;
+  color: #000000;
 }
 
 .App-link {
   color: #61dafb;
 }
 
-.active {
-  color:white;
+.card {
+  box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2);
+  transition: 0.3s;
+  width: 225px;
+  border:2px solid #e6e6e6;
+  padding:10px;
+  font-size:16px;
+  display:flex;
+  margin:20px;
+  cursor:pointer;
+  border-radius:5px;
 }
 
-.non-active{
-  color:blue;
+.card:hover {
+  box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2);
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+span {
+  padding-left:10px;
+}
+
+.grid_css {
+  display: grid;
+  grid-template-columns: auto auto auto auto ;
+}
+
+.pathBlock {
+  margin:0px 6px 8px 6px;
+  cursor:pointer;
 }

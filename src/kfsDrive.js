@@ -16,13 +16,14 @@ class FilesView1 extends React.Component {
       receipent:'',
       loading:false,
       isEmpty:false,
+      videoBoolean:false,
+      VideoSource:'',
       xml:''
     }
   }
   async componentDidMount() {
     const accounts = await web3.eth.getAccounts();
     this.setState({receipent: accounts[0]});  
-    console.log(this.state.receipent);
     this.renderFiles();
   }
 
@@ -44,11 +45,15 @@ class FilesView1 extends React.Component {
             this.setState({content:response.data,plainContent:true,imageContent:false,loading:false});
           }
           else if(returnType == 'image/jpeg' || returnType == 'image/jpg' || returnType == 'image/png' || returnType == 'image/gif') {
+            // this.setState({source:url,imageContent:true,plainContent:false,loading:false});
             this.setState({source:url,imageContent:true,plainContent:false,loading:false});
           }
           else {
             if(returnType == 'text/xml; charset=utf-8') {
               this.setState({xml : response.data , loading:false});
+            }
+            else if(returnType == 'video/mp4') {
+              this.setState({VideoSource:url,videoBoolean:true,loading:false});
             }
             else {
              console.log(response.data);
@@ -62,13 +67,10 @@ class FilesView1 extends React.Component {
 
   renderFiles = async () => {
     const accounts = await web3.eth.getAccounts();
-    let kfsFilesDup = await kfs.methods.getFilesOfOwner().call({from:accounts[0]});
-    console.log(kfsFilesDup);
-    let pieSet = new Set();
+    let kfsFilesDup = await kfs.methods.getFilesOfOwner().call({from:accounts[0]});    let pieSet = new Set();
     let kfsFiles = [];
     let j = 0;
     for(let i=0;i<kfsFilesDup.length;i++)  {
-      console.log(kfsFilesDup[i]);
       if(!pieSet.has(kfsFilesDup[i])) {
         kfsFiles[j] = kfsFilesDup[i];
         j++;
@@ -107,14 +109,12 @@ class FilesView1 extends React.Component {
     let kfsApps = [];
     let j1 = 0;
     for(let i=0;i<kfsAppsDup.length;i++)  {
-      console.log(kfsAppsDup[i]);
       if(!pieSet1.has(kfsAppsDup[i].appName)) {
         kfsApps[j1] = kfsAppsDup[i];
         j1++;
         pieSet1.add(kfsAppsDup[i].appName);
       }
     }
-    console.log(kfsApps);
     for(let i=0;i<kfsApps.length;i++) {
       const previousHashes = await kfs.methods.checkAppPreviousHashes(kfsApps[i].appName).call({from:accounts[0]});
       const Description = previousHashes.map(hash => {
@@ -153,14 +153,14 @@ class FilesView1 extends React.Component {
 render() {
   return (
     <div>
-    {this.state.isEmpty ? <center><h1 style={{color:'white',marginTop:'20%'}}>Your Directory is Empty</h1></center> : 
-    <div style={{display:'flex',height:'700px'}}>
-      <div style={{overflow:'auto',margin:'4% 20% 1% 4%',width:'35%'}}>
+    {this.state.isEmpty ? <center style={{backgroundColor:'#ffffff'}}><h1 style={{color:'black',paddingTop:'20%'}}>Your Directory is Empty</h1></center> : 
+    <div style={{display:'flex',height:'700px',backgroundColor:'#ffffff',paddingLeft:'100px'}}>
+      <div style={{overflow:'auto',margin:'4% 20% 1% 4%',width:'35%',paddingTop:'5px'}}>
         <Card.Group itemsPerRow="1">
           {this.state.filesExisting}
         </Card.Group>
       </div>
-      <div style={{margin:'4% 1% 2% 0%',padding:'2%',width:'35%'}}>
+      <div style={{margin:'4% 1% 2% -5%',padding:'2%',width:'40%',backgroundColor:'#000000'}}>
         {this.state.loading ? 
               <div>
                 <center>
@@ -169,7 +169,7 @@ render() {
               </div>
         : 
         <div>
-        {this.state.imageContent ? <Image style={{width:'100%'}} src={this.state.source} /> : 'Fetched Content will be appearing here!'}
+        {this.state.imageContent ? <Image style={{width:'100%'}} src={this.state.source} /> : <span style={{color:'#ffffff'}}>Fetched Content will be appearing here!</span>}
         {this.state.plainContent ? 
           <div style={{backgroundColor:'#ffffff',padding:'2%'}}>
             <center><h2>File Content</h2></center>
@@ -184,6 +184,10 @@ render() {
                 </xmp>
               </div>
           </div> : ''}
+          {this.state.videoBoolean? <video width="100%" height="400" controls>
+                                               <source src={this.state.VideoSource} type="video/mp4" />
+                                                Your browser does not support the video tag.
+                                              </video> :''}
         </div>
         }
       </div>
@@ -193,3 +197,5 @@ render() {
 }
 
 export default FilesView1;
+
+// video/mp4
