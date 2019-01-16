@@ -75,10 +75,11 @@ class ReceiverView extends Component {
     let url;
     // if(!this.state.readOnly) {
     if(false) {
-      url = 'http://204.48.21.88:3000/appdata/'+this.state.hashID+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+      
+      url = 'http://204.48.21.88:3000/appdata/'+this.state.hashID+'?senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
     }
     else {
-      url = 'http://204.48.21.88:3000/read/'+this.state.hashID+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+      url = 'http://204.48.21.88:3000/read/'+this.state.hashID+'?senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
     }
     console.log(url);
       axios.get(url)
@@ -129,13 +130,18 @@ class ReceiverView extends Component {
                   <Form onSubmit={this.onSubmit}>
                   <br /><br />
                   <Form.Field>
+                    <h4>Sender's Address</h4>
+                    <Input style={{ width: "100%" }} size="large"
+                    value={this.state.sender}
+                    onChange={event => this.setState({ sender: event.target.value})}
+                    />
                     <h4>Your Address</h4>
                     <Input style={{ width: "100%" }} size="large"
                     value={this.state.receipent}
                     onChange={event => this.setState({ receipent: event.target.value})}
                     />
                   </Form.Field>
-                  {/* <Radio toggle
+                  <Radio toggle
                       label='fetch read only files'
                       onClick={() => 
                         this.setState({readOnly: !this.state.readOnly,hashID:''})
@@ -156,7 +162,7 @@ class ReceiverView extends Component {
                         onChange={ (e,data) => this.setState({hashID: data.value})}
                         fluid selection options={this.state.existingApps} />
                       </Form.Field> 
-                    } */}
+                    }
                      <Form.Field>
                         <h4>Enter KFS file id</h4>
                         <Input style={{ width: "100%" }} size="large"

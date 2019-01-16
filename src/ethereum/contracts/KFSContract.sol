@@ -116,8 +116,8 @@ contract KFSContract{
         app.appName = appName;
         app.appID = appID;
         appName_check[appName] = true;
-        saveRecipientForApp(appName, msg.sender);
         appName_recipients_check[appName][msg.sender] = true;
+        saveRecipientForApp(appName, msg.sender);
         appOwner_app[msg.sender].push(app);
         appName_index[appName] = getAppCount();
         allApps.push(app);

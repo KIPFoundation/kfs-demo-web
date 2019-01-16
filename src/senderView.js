@@ -35,6 +35,7 @@ class SenderView extends Component {
   }
   componentDidMount(){
     web3.eth.getAccounts().then((accounts, err) => {
+      console.log(accounts[0]);
       this.setState({sender: accounts[0]});    
     });
     let tempReceipents = [];
@@ -179,12 +180,13 @@ class SenderView extends Component {
           this.setState({hashMessage:'Please enter file name',visible:true,alert:'KFS Alert'});
         }
         else {
+            console.log(web3.utils.hexToAscii(this.state.appNames[this.state.selectApp]));
               const formData = new FormData();
               formData.append('file', this.state.uploadedFile);
-              formData.append('appID', this.state.selectApp);
+              formData.append('appName', web3.utils.hexToAscii(this.state.appNames[this.state.selectApp]));
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-              axios.post('http://204.48.21.88:3000/upload/update?', formData)
+              axios.post('http://204.48.21.88:3000/upload/update', formData)
               .then( response => {
                 if(response.data === 'false') {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -224,6 +226,7 @@ class SenderView extends Component {
   saveToBC = async() => {
     try{
       if(!this.state.readNWrite) {
+        console.log(this.state.sender);
         await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
           from: this.state.sender
         });
@@ -245,7 +248,7 @@ class SenderView extends Component {
   FolderPrompt = () => {
     return (
       <div>
-        {/* <Radio toggle
+        <Radio toggle
           label='select folder to move this file'
           onClick={() => 
             this.setState({readNWrite: !this.state.readNWrite})
@@ -260,7 +263,7 @@ class SenderView extends Component {
           </Form.Field> 
           :
           ""
-        } */}
+        }
         { this.state.visible ? 
         <Form.Field>
           <Message positive
