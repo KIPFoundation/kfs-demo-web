@@ -6,7 +6,7 @@ import Logo from './kipLogo.png';
 import { Icon,Image } from 'semantic-ui-react';
 import SenderView from './senderView';
 import ReceiverView from './receiverView';
-import FilesView from './drive1.js';
+import FilesView from './explorer_new';
 // import FilesView from './kfsDrive';
 import CreateApp from './createApp';
 import XmlForm from './xmlForm';
