@@ -86,8 +86,8 @@ class Drive extends React.Component {
         this.setState({readRequest:true,appHistory:appHistory});
         const b64OfSender = window.btoa(this.state.sender.toLowerCase());
         // Check this for rendering of files
-        // const b64OfReceipent = receipentAddress == 'self' ? b64OfSender : window.btoa(receipentAddress.toLowerCase());
-        const readingUrl = 'http://204.48.21.88:3000/read/'+fileToBeRead+'?reciPub=' + receipentAddress;
+        const b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
+        const readingUrl = 'http://204.48.21.88:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
         console.log(readingUrl);
         axios.get(readingUrl)
         .then( response => {
@@ -107,7 +107,7 @@ class Drive extends React.Component {
         .catch((error) => {
           console.log(error);
       });
-        this.setState({imageContent:true}); //remove this afterwards
+        this.setState({loading:false}); //remove this afterwards
     }
 
     renderAppContents = async (siteMap) => {
@@ -153,7 +153,7 @@ class Drive extends React.Component {
         for(let invitedFile of siteMap.InvitedFiles) {
             console.log(invitedFile.file_hash + " pub "+ invitedFile.file_name + " app_name " + siteMap.app_name)
             tempInvitedFiles.push( (<button className="card" 
-                                        onClick={() => this.renderFile(invitedFile.file_hash, invitedFile.sender_pub, siteMap.app_name)}>
+                                        onClick={() => this.renderFile(invitedFile.file_hash, 'self', siteMap.app_name)}>
                                             <Icon name='file' />
                                             <span>{invitedFile.file_name}</span>
                                         </button>) );
