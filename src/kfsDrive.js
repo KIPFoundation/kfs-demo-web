@@ -83,7 +83,7 @@ class FilesView1 extends React.Component {
       files[i] = (
         <Card key={i}>
           <Card.Content>
-            <Card.Header>{web3.utils.hexToAscii(kfsFiles[i].fileName)}</Card.Header>
+            <Card.Header>{web3.utils.hexToUtf8(kfsFiles[i].fileName)}</Card.Header>
             <Card.Meta>{kfsFiles[i].kfsHash}</Card.Meta>
           </Card.Content> 
           <Card.Content extra>
@@ -124,7 +124,7 @@ class FilesView1 extends React.Component {
         <Card key={i+kfsFilesLength}>
           <Card.Content>
             {/* <p style={{float:'right'}}>23-Nov-2018</p> */}
-            <Card.Header>{web3.utils.hexToAscii(kfsApps[i].appName)}</Card.Header>
+            <Card.Header>{web3.utils.hexToUtf8(kfsApps[i].appName)}</Card.Header>
             <Card.Meta>{kfsApps[i].appID}</Card.Meta>
             <Card.Description>
               <h4>Audit Trail (State Hashes)</h4>

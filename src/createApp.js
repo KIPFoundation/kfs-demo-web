@@ -28,9 +28,9 @@ class ReceiverView extends Component {
   }
 
   saveToBC = async() => {
-    console.log(web3.utils.fromAscii(this.state.appName)+' : '+this.state.appIDHash);
+    console.log(web3.utils.fromUtf8(this.state.appName)+' : '+this.state.appIDHash);
     try{
-      await kfs.methods.createApp(web3.utils.fromAscii(this.state.appName.trim()),this.state.appIDHash).send({
+      await kfs.methods.createApp(web3.utils.fromUtf8(this.state.appName.trim()),this.state.appIDHash).send({
         from: this.state.sender
       });
       this.setState({realContent:'AppID :'+this.state.appIDHash+' has been created successfully',open:false,visible:true,alert:'KFS Alert'})
@@ -47,8 +47,8 @@ class ReceiverView extends Component {
   }
 
   getAppID = () => {
-    console.log(window.btoa(this.state.sender.toLowerCase()));
     const appIdUrl = 'http://204.48.21.88:3000/createAppID/'+this.state.appName.trim()+'?sender='+window.btoa(this.state.sender.toLowerCase());
+    console.log(appIdUrl);    
     let appIDHash = '';
           axios.get(appIdUrl)
           .then( response => {
@@ -84,7 +84,7 @@ class ReceiverView extends Component {
                     />
                   </Form.Field>
                   <Form.Field>
-                    <h4>Enter App Name you want to save with</h4>
+                    <h4>Enter folder name you want to save files into</h4>
                     <Input style={{ width: "100%" }} size="large"
                     value={this.state.appName}
                     onChange={event => this.setState({ appName: event.target.value})}

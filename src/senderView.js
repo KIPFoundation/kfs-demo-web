@@ -76,7 +76,7 @@ class SenderView extends Component {
         let tempOwnedApps = [];
         let i=0;
         for(let appName of appNames) {
-          let text1 = web3.utils.hexToAscii(appName);
+          let text1 = web3.utils.hexToUtf8(appName);
           tempOwnedApps[i] = {
             key : appName,
             value : appIds[i++],
@@ -180,10 +180,10 @@ class SenderView extends Component {
           this.setState({hashMessage:'Please enter file name',visible:true,alert:'KFS Alert'});
         }
         else {
-            console.log(web3.utils.hexToAscii(this.state.appNames[this.state.selectApp]));
               const formData = new FormData();
+              let selectApp = web3.utils.hexToUtf8(this.state.appNames[this.state.selectApp]);
               formData.append('file', this.state.uploadedFile);
-              formData.append('appName', web3.utils.hexToAscii(this.state.appNames[this.state.selectApp]));
+              formData.append('appName', selectApp);
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
               axios.post('http://204.48.21.88:3000/upload/update', formData)
@@ -227,7 +227,7 @@ class SenderView extends Component {
     try{
       if(!this.state.readNWrite) {
         console.log(this.state.sender);
-        await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
+        await kfs.methods.createFile(web3.utils.fromUtf8(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
           from: this.state.sender
         });
       }
@@ -249,7 +249,7 @@ class SenderView extends Component {
     return (
       <div>
         <Radio toggle
-          label='select folder to move this file'
+          label='Move this file to a folder'
           onClick={() => 
             this.setState({readNWrite: !this.state.readNWrite})
           } 
@@ -299,7 +299,7 @@ class SenderView extends Component {
                 <Grid.Column width={16}>   
                     <br /><br />
                     <Radio toggle
-                      label='Would like to send as file'
+                      label='Send base64 content / Send a file'
                       onClick={() => 
                         this.setState({checked: !this.state.checked,visible:false,readNWrite:false,appID:'',hashMessage:''})
                       } 

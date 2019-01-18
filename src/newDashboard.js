@@ -7,7 +7,7 @@ import { Icon,Image } from 'semantic-ui-react';
 import SenderView from './senderView';
 import ReceiverView from './receiverView';
 import FilesView from './explorer_new';
-// import FilesView from './kfsDrive';
+// import FilesView from './explorer_old';
 import CreateApp from './createApp';
 import XmlForm from './xmlForm';
 
@@ -40,7 +40,7 @@ class Dashboard extends Component {
                                         <Icon style={{ fontSize: '1.75em' }} link name='send' />
                                     </NavIcon>
                                     <NavText>
-                                       Send / Insert File
+                                       Send / Upload File
                                     </NavText>
                                 </NavItem>
                                 {/* <NavItem eventKey="upload">
@@ -67,14 +67,14 @@ class Dashboard extends Component {
                                         KFS Drive
                                     </NavText>
                                 </NavItem>
-                                <NavItem eventKey="read">
+                                {/* <NavItem eventKey="read">
                                     <NavIcon>
                                         <Icon style={{ fontSize: '1.75em' }} link name='find' />
                                     </NavIcon>
                                     <NavText>
-                                       Find Content
+                                       Read File
                                     </NavText>
-                                </NavItem>
+                                </NavItem> */}
                                 <NavItem eventKey="xmlForm">
                                     <NavIcon>
                                         <Icon style={{ fontSize: '1.75em' }} link name='file code outline' />
@@ -91,7 +91,7 @@ class Dashboard extends Component {
                             {/* <Route path="/upload" component={SenderView} /> */}
                             <Route path="/create" component={CreateApp} />
                             <Route path="/drive" component={FilesView} />
-                            <Route path="/read" component={ReceiverView} />
+                            {/* <Route path="/read" component={ReceiverView} /> */}
                             <Route path="/xmlForm" component={XmlForm} />
                         </main>
                     </React.Fragment>

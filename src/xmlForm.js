@@ -73,7 +73,7 @@ class XmlForm extends Component {
         let tempOwnedApps = [];
         let i=0;
         for(let appName of appNames) {
-          let text1 = web3.utils.hexToAscii(appName);
+          let text1 = web3.utils.hexToUtf8(appName);
           tempOwnedApps[i] = {
             key : appName,
             value : appIds[i++],
@@ -153,8 +153,8 @@ class XmlForm extends Component {
   saveToBC = async() => {
     try{
       if(!this.state.readNWrite) {
-        console.log(web3.utils.fromAscii(this.state.fileName)+"-"+this.state.hashMessage+"-"+this.state.receipent+"-"+this.state.sender)
-        await kfs.methods.createFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
+        console.log(web3.utils.fromUtf8(this.state.fileName)+"-"+this.state.hashMessage+"-"+this.state.receipent+"-"+this.state.sender)
+        await kfs.methods.createFile(web3.utils.fromUtf8(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
           from: this.state.sender
         });
       }
