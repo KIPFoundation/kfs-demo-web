@@ -218,7 +218,7 @@ class SenderView extends Component {
             }
           })
           .catch(error => {
-            this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+            this.setState({open:false,visible:true,hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
           });
         }
     }

@@ -4,7 +4,8 @@ import { Icon,Modal,Header,Button,Image } from 'semantic-ui-react';
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
 import loadingGIF from './loader.gif';
-import kfs from './ethereum/kfs.js'
+// import ReactPlayer from 'react-player';
+// import kfs from './ethereum/kfs.js'
 
 let siteMap;
 
@@ -31,7 +32,8 @@ class Drive extends React.Component {
             VideoSource:'',
             videoType:'',
             openWorkspace:'',
-            siteMap:''
+            siteMap:'',
+            fileLoading:false
         }
     }
 
@@ -82,8 +84,8 @@ class Drive extends React.Component {
     //     });
     // }
 
-    renderFile = (fileToBeRead, receipentAddress, appHistory) => {
-        this.setState({readRequest:true,appHistory:appHistory});
+    renderFile = (fileToBeRead, receipentAddress, appHistory,fileName) => {
+        this.setState({readRequest:true,appHistory:appHistory,source:'',VideoSource:'',fileLoading:true});
         const b64OfSender = window.btoa(this.state.sender.toLowerCase());
         // Check this for rendering of files
         const b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
@@ -92,15 +94,22 @@ class Drive extends React.Component {
         axios.get(readingUrl)
         .then( response => {
           const returnType = response.headers['content-type'];
+          console.log(returnType);
           if(response.data === false) {
             console.log('UnAuthorized Attempt');
           }
           else {
-            if(returnType === 'image/jpeg' || returnType === 'image/png' || returnType === 'image/gif') {
-              this.setState({source:readingUrl, imageContent:true});
+            if(returnType === 'image/jpeg' || returnType === 'image/png' || returnType === 'image/gif' || returnType === 'image/jpg') {
+              this.setState({source:readingUrl, imageContent:true , fileLoading:false});
             }
-            else if(returnType == 'video/mp4' || returnType == 'video/mov' || returnType == 'video/flv' || returnType == 'video/avi') {
-                this.setState({VideoSource:readingUrl, videoContent:true, videoType:returnType});
+            else if(returnType == 'video/mp4' || returnType == 'video/quicktime' || returnType == 'video/x-flv' || returnType == 'video/x-msvideo' || returnType == 'video/x-matroska') {
+                const url = window.URL.createObjectURL(new Blob([readingUrl]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName); //or any other extension
+                document.body.appendChild(link);
+                link.click();
+                this.setState({readRequest : false});
             }
           }
         })
@@ -111,98 +120,60 @@ class Drive extends React.Component {
     }
 
     renderAppContents = async (siteMap) => {
-        // siteMap = 
-        //     {
-        //         "app_name": "MHg4YzA1OWUyMzg5MGFkNmUyYTQyM2ZiNTIzNTk1NmUxN2M3YzkyZDdm",
-        //         "app_id": "QmR2F7VAvKccE5vKuPUqC2bPN91pnSSfxhywq9zzpm6vCk",
-        //         "InvitedFiles": [
-        //             {
-        //                 "file_name": "ScreenShot2019-01-15at7.59.12PM.png",
-        //                 "file_hash": "QmSLSH4hsT9wumYPRycc2uMa1cHJxLRNGV6dJW1K5vavLX",
-        //                 "sender_pub":"MHg5ZjJjOTVjZGM5NjBiNmEyYmI5Zjg4M2I0Nzg2MTliZWFkMWM1N2Vl"
-        //             },
-        //             {
-        //                 "file_name": "ScreenShot2019-01-15at7.59.12PM.png",
-        //                 "file_hash": "QmSLSH4hsT9wumYPRycc2uMa1cHJxLRNGV6dJW1K5vavLX",
-        //                 "sender_pub":"MHg5ZjJjOTVjZGM5NjBiNmEyYmI5Zjg4M2I0Nzg2MTliZWFkMWM1N2Vl"
-        //             },
-        //             {
-        //                 "file_name": "ScreenShot2019-01-15at7.59.12PM.png",
-        //                 "file_hash": "QmSLSH4hsT9wumYPRycc2uMa1cHJxLRNGV6dJW1K5vavLX",
-        //                 "sender_pub":"MHg5ZjJjOTVjZGM5NjBiNmEyYmI5Zjg4M2I0Nzg2MTliZWFkMWM1N2Vl"
-        //             }
-        //         ],
-        //         "CreatedFiles": [
-        //             {
-        //                 "file_name": "ScreenShot2019-01-15at7.59.12PM.png",
-        //                 "file_hash": "QmSLSH4hsT9wumYPRycc2uMa1cHJxLRNGV6dJW1K5vavLX"
-        //                 "receiver_pub":"MHg5ZjJjOTVjZGM5NjBiNmEyYmI5Zjg4M2I0Nzg2MTliZWFkMWM1N2Vl"
-        //             },
-        //             {
-        //                 "file_name": "ScreenShot2019-01-15at7.59.12PM.png",
-        //                 "file_hash": "QmSLSH4hsT9wumYPRycc2uMa1cHJxLRNGV6dJW1K5vavLX"
-        //                 "receiver_pub":"MHg5ZjJjOTVjZGM5NjBiNmEyYmI5Zjg4M2I0Nzg2MTliZWFkMWM1N2Vl"
-        //             }
-        //         ]
-        //     };
-
-
         let tempInvitedFiles = [];
         let tempCreatedFiles = [];
         if(siteMap){
         for(let invitedFile of siteMap.InvitedFiles) {
-            console.log(invitedFile.file_hash + " pub "+ invitedFile.file_name + " app_name " + siteMap.app_name)
             tempInvitedFiles.push( (<button className="card" 
-                                        onClick={() => this.renderFile(invitedFile.file_hash, 'self', siteMap.app_name)}>
+                                        onClick={() => this.renderFile(invitedFile.file_hash, 'self', siteMap.app_name,invitedFile.file_name)}>
                                             <Icon name='file' />
                                             <span>{invitedFile.file_name}</span>
                                         </button>) );
         }
          if(siteMap.CreatedFiles){
         for(let createdFile of siteMap.CreatedFiles) {
-            console.log(createdFile.file_hash + " file_name " + createdFile.file_name)
             tempCreatedFiles.push( (<button className="card" 
-                                        onClick={() => this.renderFile(createdFile.file_hash, createdFile.receiver_pub, siteMap.app_name)}>
+                                        onClick={() => this.renderFile(createdFile.file_hash, createdFile.receiver_pub, siteMap.app_name,createdFile.file_name)}>
                                             <Icon name='file' />
                                             <span>{createdFile.file_name}</span>
                                         </button>) );
         }
     }
-        let currentWorkspace = siteMap.app_name;
+        // let currentWorkspace = siteMap.app_name;
         this.setState({ readRequest:false, Workspaces:[] , InvitedFiles:tempInvitedFiles, CreatedFiles:tempCreatedFiles, open:false, loading:false})
     }}
 
-    renderWorkspaces = async () => {
-        const kfsAppsReplicated = await kfs.methods.getAppsOfOwner().call({from:this.state.sender});
-        let pieSet1 = new Set();
-        let kfsApps = [];
-        let j1 = 0;
-        for(let i=0;i<kfsAppsReplicated.length;i++)  {
-            if(!pieSet1.has(kfsAppsReplicated[i].appName)) {
-                kfsApps[j1] = kfsAppsReplicated[i];
-                j1++;
-                pieSet1.add(kfsAppsReplicated[i].appName);
-            }
-        }
-        let tempWorkspaces = [];
-        for(let workspace of kfsApps) {
-            //uncomment first onClick event and comment second onclick once sitemap is ready
-            // The second param in the fetchSitemap function should be the senderPub (in base64 encoded format) 
-            const currentAppName = web3.utils.hexToUtf8(workspace.appName)
-            tempWorkspaces.push( (<button className="card" 
-                                        onClick={() => this.fetchSitemap(workspace.appName, workspace.appName)}>
+    // renderWorkspaces = async () => {
+    //     const kfsAppsReplicated = await kfs.methods.getAppsOfOwner().call({from:this.state.sender});
+    //     let pieSet1 = new Set();
+    //     let kfsApps = [];
+    //     let j1 = 0;
+    //     for(let i=0;i<kfsAppsReplicated.length;i++)  {
+    //         if(!pieSet1.has(kfsAppsReplicated[i].appName)) {
+    //             kfsApps[j1] = kfsAppsReplicated[i];
+    //             j1++;
+    //             pieSet1.add(kfsAppsReplicated[i].appName);
+    //         }
+    //     }
+    //     let tempWorkspaces = [];
+    //     for(let workspace of kfsApps) {
+    //         //uncomment first onClick event and comment second onclick once sitemap is ready
+    //         // The second param in the fetchSitemap function should be the senderPub (in base64 encoded format) 
+    //         const currentAppName = web3.utils.hexToUtf8(workspace.appName)
+    //         tempWorkspaces.push( (<button className="card" 
+    //                                     onClick={() => this.fetchSitemap(workspace.appName, workspace.appName)}>
                                         
-                                           {/* onClick={() => {
-                                            this.setState({openWorkspace:currentAppName})
-                                            this.renderAppContents(siteMap)}
-                                        }>  */}
-                                            <Icon name='folder' />
-                                            <span>{currentAppName}</span>
-                                        </button>) );
-        }
+    //                                        {/* onClick={() => {
+    //                                         this.setState({openWorkspace:currentAppName})
+    //                                         this.renderAppContents(siteMap)}
+    //                                     }>  */}
+    //                                         <Icon name='folder' />
+    //                                         <span>{currentAppName}</span>
+    //                                     </button>) );
+    //     }
 
-        this.setState({ Workspaces : tempWorkspaces });
-    }
+    //     this.setState({ Workspaces : tempWorkspaces });
+    // }
 
     // signUpWithb64 = () => {
     //     this.setState({loading:true});
@@ -216,6 +187,35 @@ class Drive extends React.Component {
     //     .catch(error => {
     //       this.setState({loading:false,open:true})
     //     });
+    // }
+
+    loadingComponent = () => {
+        return (
+            <div style={{padding:'5% 10% 10% 15%'}}>
+                <center>
+                <img height="150px" width="150px;" style={{marginTop : '100px'}} src={ loadingGIF } />
+                </center>
+            </div>
+        );
+    }
+
+    // renderVideoContent = () => {
+    //     if(this.state.returnType == '') {
+    //         return (
+    //             <video width="100%" height="400" controls>
+    //                 <source src={this.state.VideoSource} type={this.state.videoType} />
+    //                 Your browser does not support the provided video tag.
+    //             </video> 
+    //         );
+    //     }
+    //     else if(this.state.returnType == 'video/x-flv') {
+    //         return (
+    //                 <video id="video1" class="video-js vjs-default-skin" width="100%" height="400"
+    //                     dataSetup='{"controls" : true, "autoplay" : true, "preload" : "auto"}'>
+    //                     <source src={this.state.VideoSource} type="video/x-flv" />
+    //                 </video>
+    //             );
+    //     }
     // }
 
     render() {
@@ -236,6 +236,8 @@ class Drive extends React.Component {
             );
         }
 
+        
+
         // const header = (
         //     <div style={{display:'flex'}}>
         //         <span style={{marginRight:'650px'}}>{this.state.pathTracker}</span>
@@ -247,16 +249,32 @@ class Drive extends React.Component {
         // );
         if(this.state.loading) {
             return (
-                <div style={{backgroundColor:'white',padding:'5% 10% 10% 15%'}}>
+            <div style={{backgroundColor:'white',padding:'5% 10% 10% 15%'}}>
                 <center>
-                  <img height="150px" width="150px;" style={{marginTop : '100px'}} src={ loadingGIF } />
+                <img height="150px" width="150px;" style={{marginTop : '100px'}} src={ loadingGIF } />
                 </center>
-              </div>
+            </div>
+                
             );
         }
         else {
             if(this.state.readRequest) {
                 /* uncomment first button and uncomment second once sitemap is ready */
+                if(this.state.fileLoading) {
+                    return (
+                        <div>
+                         <Button style={{marginLeft:'100px'}} icon
+                            onClick={() => this.renderAppContents(this.state.siteMap)}>
+                                   BACK
+                         <Icon name='left arrow' style={{float: 'left'}}/>
+                        </Button>
+                        <div style={{backgroundColor:'#e6e6e6',height:'700px',border:'1px solid #',width:'80%',padding:'5%',margin:'5% 10% 5% 12%'}}>
+                            {this.loadingComponent()}
+                        </div>
+                      </div>
+                    );  
+                }
+                else {
                 return (
                     <div>
                      {/* <Button style={{marginLeft:'100px'}} icon
@@ -271,15 +289,18 @@ class Drive extends React.Component {
                      <Icon name='left arrow' style={{float: 'left'}}/>
                     </Button>
                     <div style={{backgroundColor:'#e6e6e6',height:'700px',border:'1px solid #',width:'80%',padding:'5%',margin:'5% 10% 5% 12%'}}>
-                        {this.state.imageContent ? <Image style={{width:'50%'}} src={loadingGIF} /> : ''}
-                        {this.state.videoBoolean? <video width="100%" height="400" controls>
-                                                            <source src={this.state.VideoSource} type={this.state.videoType} />
-                                                            Your browser does not support the provided video tag.
-                                                            </video> :''}
+                        {this.state.imageContent ? <Image style={{width:'50%'}} src={this.state.source} /> : ''}
+                        {/* {this.state.videoContent ? <ReactPlayer
+                            url={this.state.VideoSource}
+                            className='react-player'
+                            playing
+                            width='100%'
+                            height='100%'
+                            />: ''} */}
                     </div>
                   </div>
                 );
-            }
+            }}
             else {
             if(this.state.open) {
                 return (

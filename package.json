@@ -10,6 +10,7 @@
     "ipld-dag-pb": "^0.15.0",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
+    "react-player": "^1.8.0",
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.5",
     "semantic-ui-css": "^2.4.1",
