@@ -5,9 +5,8 @@ import web3 from './ethereum/web3.js';
 import axios from 'axios';
 import loadingGIF from './loader.gif';
 // import ReactPlayer from 'react-player';
-// import kfs from './ethereum/kfs.js'
+import kfs from './ethereum/kfs.js'
 
-let siteMap;
 
 class Drive extends React.Component {
     constructor(props) {
@@ -24,6 +23,7 @@ class Drive extends React.Component {
             CreatedFiles:[],
             InvitedFiles:[],
             Workspaces:[],
+            workspaceInnerContents:[],
             currentAppName:'',
             readRequest:false,
             imageContent:false,
@@ -33,7 +33,9 @@ class Drive extends React.Component {
             videoType:'',
             openWorkspace:'',
             siteMap:'',
-            fileLoading:false
+            fileLoading:false,
+            backAction:'',
+            openWorkspaceAction:false
         }
     }
 
@@ -45,14 +47,12 @@ class Drive extends React.Component {
         /* we can uncomment below statement once route is fixed to allow user signup if not exists */ 
         // this.letTosignUpOrRenderDrive(b64Sender);
         this.fetchSitemap(b64Sender, b64Sender);
-        this.renderDrive();
     }
 
-    renderDrive = () => {
-        // this.renderAppContents(siteMap);
-        // Not going for showing Workspace as of now
-        // this.renderWorkspaces();
-        this.setState({ openWorkspace:'' })
+    renderDrive = (explorer) => {
+            // this.setState({ readRequest:false })
+            this.renderAppContents(explorer);
+            // this.renderWorkspaces();    
     }
 
 
@@ -65,11 +65,36 @@ class Drive extends React.Component {
                if(appName == senderPub){
                     this.setState({siteMap: response.data});
                 }
-                this.renderAppContents(response.data);
+                this.renderDrive(response.data);
             }
         })
         .catch(error => {
             console.log('Error in Fetching SiteMap --> ' + error);
+        });
+    }
+
+    fetchSitemapOfWorkspace = (appName) => {
+        const desiredWorkspace = web3.utils.hexToAscii(appName).replace(/\u0000/g, '')
+        console.log(desiredWorkspace.length);
+        const owner = window.btoa(this.state.sender.toLowerCase());
+        const url = 'http://204.48.21.88:3000/appdata/'+desiredWorkspace+'?senderPub='+owner+'&reciPub='+owner;
+        console.log(url);
+        axios.get(url)
+        .then( response => {
+            const innerFiles = response.data.files;
+            console.log(innerFiles);
+            let innerContents = [];
+                for(let innerFile of innerFiles) {
+                    innerContents.push( (<button className="card" 
+                                                onClick={() => this.renderFile(innerFile.file_hash, 'self',[],innerFile.file_name,2)}>
+                                                    <Icon name='file' />
+                                                    <span>{innerFile.file_name}</span>
+                                                </button>) );
+                }
+            this.setState({openWorkspace:desiredWorkspace,openWorkspaceAction:true,readRequest:true,workspaceInnerContents:innerContents})
+        })
+        .catch(error => {
+            console.log(error);
         });
     }
     // letTosignUpOrRenderDrive = (defaultAppName) => {
@@ -84,8 +109,8 @@ class Drive extends React.Component {
     //     });
     // }
 
-    renderFile = (fileToBeRead, receipentAddress, appHistory,fileName) => {
-        this.setState({readRequest:true,appHistory:appHistory,source:'',VideoSource:'',fileLoading:true});
+    renderFile = (fileToBeRead, receipentAddress, appHistory,fileName,iteration) => {
+        this.setState({readRequest:true,appHistory:appHistory,source:'',VideoSource:'',fileLoading:true,openWorkspaceAction:false});
         const b64OfSender = window.btoa(this.state.sender.toLowerCase());
         // Check this for rendering of files
         const b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
@@ -111,12 +136,21 @@ class Drive extends React.Component {
                 link.click();
                 this.setState({readRequest : false});
             }
+            else {
+                const url = window.URL.createObjectURL(new Blob([readingUrl]));
+                const link = document.createElement('a');
+                link.href = url;
+                link.setAttribute('download', fileName); //or any other extension
+                document.body.appendChild(link);
+                link.click();
+                this.setState({readRequest : false});
+            }
           }
         })
         .catch((error) => {
           console.log(error);
       });
-        this.setState({loading:false}); //remove this afterwards
+        this.setState({loading:false,backAction:iteration}); //remove this afterwards
     }
 
     renderAppContents = async (siteMap) => {
@@ -125,7 +159,7 @@ class Drive extends React.Component {
         if(siteMap){
         for(let invitedFile of siteMap.InvitedFiles) {
             tempInvitedFiles.push( (<button className="card" 
-                                        onClick={() => this.renderFile(invitedFile.file_hash, 'self', siteMap.app_name,invitedFile.file_name)}>
+                                        onClick={() => this.renderFile(invitedFile.file_hash, 'self', siteMap.app_name,invitedFile.file_name,1)}>
                                             <Icon name='file' />
                                             <span>{invitedFile.file_name}</span>
                                         </button>) );
@@ -133,47 +167,46 @@ class Drive extends React.Component {
          if(siteMap.CreatedFiles){
         for(let createdFile of siteMap.CreatedFiles) {
             tempCreatedFiles.push( (<button className="card" 
-                                        onClick={() => this.renderFile(createdFile.file_hash, createdFile.receiver_pub, siteMap.app_name,createdFile.file_name)}>
+                                        onClick={() => this.renderFile(createdFile.file_hash, createdFile.receiver_pub, siteMap.app_name,createdFile.file_name,1)}>
                                             <Icon name='file' />
                                             <span>{createdFile.file_name}</span>
                                         </button>) );
         }
     }
         // let currentWorkspace = siteMap.app_name;
-        this.setState({ readRequest:false, Workspaces:[] , InvitedFiles:tempInvitedFiles, CreatedFiles:tempCreatedFiles, open:false, loading:false})
+        this.setState({ openWorkspaceAction:false,readRequest:false, Workspaces:[] , InvitedFiles:tempInvitedFiles, CreatedFiles:tempCreatedFiles, open:false, loading:false})
     }}
 
-    // renderWorkspaces = async () => {
-    //     const kfsAppsReplicated = await kfs.methods.getAppsOfOwner().call({from:this.state.sender});
-    //     let pieSet1 = new Set();
-    //     let kfsApps = [];
-    //     let j1 = 0;
-    //     for(let i=0;i<kfsAppsReplicated.length;i++)  {
-    //         if(!pieSet1.has(kfsAppsReplicated[i].appName)) {
-    //             kfsApps[j1] = kfsAppsReplicated[i];
-    //             j1++;
-    //             pieSet1.add(kfsAppsReplicated[i].appName);
-    //         }
-    //     }
-    //     let tempWorkspaces = [];
-    //     for(let workspace of kfsApps) {
-    //         //uncomment first onClick event and comment second onclick once sitemap is ready
-    //         // The second param in the fetchSitemap function should be the senderPub (in base64 encoded format) 
-    //         const currentAppName = web3.utils.hexToUtf8(workspace.appName)
-    //         tempWorkspaces.push( (<button className="card" 
-    //                                     onClick={() => this.fetchSitemap(workspace.appName, workspace.appName)}>
-                                        
-    //                                        {/* onClick={() => {
-    //                                         this.setState({openWorkspace:currentAppName})
-    //                                         this.renderAppContents(siteMap)}
-    //                                     }>  */}
-    //                                         <Icon name='folder' />
-    //                                         <span>{currentAppName}</span>
-    //                                     </button>) );
-    //     }
+    renderWorkspaces = async () => {
+        const kfsAppsReplicated = await kfs.methods.getAppsOfOwner().call({from:this.state.sender});
+        let pieSet1 = new Set();
+        let kfsApps = [];
+        let j1 = 0;
+        for(let i=0;i<kfsAppsReplicated.length;i++)  {
+            if(!pieSet1.has(kfsAppsReplicated[i].appName)) {
+                kfsApps[j1] = kfsAppsReplicated[i];
+                j1++;
+                pieSet1.add(kfsAppsReplicated[i].appName);
+            }
+        }
+        let tempWorkspaces = [];
+        for(let workspace of kfsApps) {
+            //uncomment first onClick event and comment second onclick once sitemap is ready
+            // The second param in the fetchSitemap function should be the senderPub (in base64 encoded format) 
+            const currentAppName = web3.utils.hexToUtf8(workspace.appName)
+            tempWorkspaces.push( (<button className="card" 
+                                        onClick={() => this.fetchSitemapOfWorkspace(workspace.appName)}>                                        
+                                           {/* onClick={() => {
+                                            this.setState({openWorkspace:currentAppName})
+                                            this.renderAppContents(siteMap)}
+                                        }>  */}
+                                            <Icon name='folder' />
+                                            <span>{currentAppName}</span>
+                                        </button>) );
+        }
 
-    //     this.setState({ Workspaces : tempWorkspaces });
-    // }
+        this.setState({ Workspaces : tempWorkspaces , loading:false});
+    }
 
     // signUpWithb64 = () => {
     //     this.setState({loading:true});
@@ -199,54 +232,36 @@ class Drive extends React.Component {
         );
     }
 
-    // renderVideoContent = () => {
-    //     if(this.state.returnType == '') {
-    //         return (
-    //             <video width="100%" height="400" controls>
-    //                 <source src={this.state.VideoSource} type={this.state.videoType} />
-    //                 Your browser does not support the provided video tag.
-    //             </video> 
-    //         );
-    //     }
-    //     else if(this.state.returnType == 'video/x-flv') {
-    //         return (
-    //                 <video id="video1" class="video-js vjs-default-skin" width="100%" height="400"
-    //                     dataSetup='{"controls" : true, "autoplay" : true, "preload" : "auto"}'>
-    //                     <source src={this.state.VideoSource} type="video/x-flv" />
-    //                 </video>
-    //             );
-    //     }
-    // }
 
     render() {
-        let pathRoutes = [];
-        let i=1;
-        pathRoutes[0] = (
-            <div style={{display:'flex'}} className="pathBlock">
-                <div onClick={() => this.renderDrive()}>My KFS Drive</div>
-                <span style={{marginLeft:'6px'}}>&gt;</span>
-            </div>
-        );
-        if(this.state.openWorkspace != '') {
-            pathRoutes[1] = (
-                <div style={{display:'flex'}} className="pathBlock">
-                    <div onClick={() => this.renderAppContents(siteMap)}>{this.state.openWorkspace}</div>
-                    <span style={{marginLeft:'10px'}}>&gt;</span>
-                </div>
-            );
-        }
+        // let pathRoutes = [];
+        // let i=1;
+        // pathRoutes[0] = (
+        //     <div style={{display:'flex'}} className="pathBlock">
+        //         <div onClick={() => this.renderDrive()}>My KFS Drive</div>
+        //         <span style={{marginLeft:'6px'}}>&gt;</span>
+        //     </div>
+        // );
+        // if(this.state.openWorkspace != '') {
+        //     pathRoutes[1] = (
+        //         <div style={{display:'flex'}} className="pathBlock">
+        //             <div onClick={() => this.renderAppContents(this.state.siteMap)}>{this.state.openWorkspace}</div>
+        //             <span style={{marginLeft:'10px'}}>&gt;</span>
+        //         </div>
+        //     );
+        // }
 
         
 
-        // const header = (
-        //     <div style={{display:'flex'}}>
-        //         <span style={{marginRight:'650px'}}>{this.state.pathTracker}</span>
-        //         <Button onClick={() => window.location = "/create"} icon labelPosition='right'>
-        //             Create Workspace
-        //          <Icon name='plus' />
-        //         </Button>
-        //     </div>
-        // );
+        const header = (
+            <div style={{display:'flex'}}>
+                <span style={{marginRight:'650px'}}>MY KFS DRIVE</span>
+                <Button onClick={() => window.location = "/create"} icon labelPosition='right'>
+                    Create Workspace
+                 <Icon name='plus' />
+                </Button>
+            </div>
+        );
         if(this.state.loading) {
             return (
             <div style={{backgroundColor:'white',padding:'5% 10% 10% 15%'}}>
@@ -260,11 +275,11 @@ class Drive extends React.Component {
         else {
             if(this.state.readRequest) {
                 /* uncomment first button and uncomment second once sitemap is ready */
-                if(this.state.fileLoading) {
+                if(this.state.fileLoading) {    
                     return (
                         <div>
                          <Button style={{marginLeft:'100px'}} icon
-                            onClick={() => this.renderAppContents(this.state.siteMap)}>
+                            onClick={() => this.renderDrive(this.state.siteMap)}>
                                    BACK
                          <Icon name='left arrow' style={{float: 'left'}}/>
                         </Button>
@@ -273,31 +288,35 @@ class Drive extends React.Component {
                         </div>
                       </div>
                     );  
-                }
+                } 
                 else {
                 return (
-                    <div>
-                     {/* <Button style={{marginLeft:'100px'}} icon
-                        onClick={() => this.renderAppContents(siteMap)}>
-                            BACK
-                     <Icon name='left arrow' />
-                    </Button> */}
-                     
-                     <Button style={{marginLeft:'100px'}} icon
-                        onClick={() => this.renderAppContents(this.state.siteMap)}>
+                    <div> 
+                     <Button style={{marginLeft:'100px',marginBottom:'30px'}} icon
+                        onClick={() => {
+                            if(this.state.backAction == 2) {
+                                this.setState({openWorkspaceAction:true,backAction:1});
+                            }
+                            else {
+                                this.renderDrive(this.state.siteMap)}
+                            }   
+                        }>
                                BACK
                      <Icon name='left arrow' style={{float: 'left'}}/>
                     </Button>
+                    {this.state.openWorkspaceAction ? 
+                    <div style={{backgroundColor:'white',padding:'5% 10% 10% 15%'}}>
+                    <div style={{fontSize:'24px',marginLeft:'30px',display:'flex'}}>{this.state.openWorkspace}</div>
+                    <hr />
+                         <h3 style={{marginLeft:'35px',marginTop:'10px'}}>Files</h3>
+                        <div className="grid_css">
+                            {this.state.workspaceInnerContents}
+                        </div>
+                    </div>
+                    :
                     <div style={{backgroundColor:'#e6e6e6',height:'700px',border:'1px solid #',width:'80%',padding:'5%',margin:'5% 10% 5% 12%'}}>
                         {this.state.imageContent ? <Image style={{width:'50%'}} src={this.state.source} /> : ''}
-                        {/* {this.state.videoContent ? <ReactPlayer
-                            url={this.state.VideoSource}
-                            className='react-player'
-                            playing
-                            width='100%'
-                            height='100%'
-                            />: ''} */}
-                    </div>
+                    </div> }
                   </div>
                 );
             }}
@@ -326,8 +345,8 @@ class Drive extends React.Component {
             }
             else {
                 return (
-                    <div style={{backgroundColor:'white',padding:'5% 10% 10% 15%'}}>
-                    <div style={{fontSize:'24px',marginLeft:'30px',display:'flex'}}>{pathRoutes}</div>
+                    <div style={{backgroundColor:'white',padding:'5% 10% 10% 15%',height:'750px',overflow: 'auto'}}>
+                    <div style={{fontSize:'24px',marginLeft:'30px',display:'flex'}}>{'MY KFS DRIVE'}</div>
                         <hr />
                         {this.state.CreatedFiles.length!=0 ?
                             <div>
@@ -345,14 +364,14 @@ class Drive extends React.Component {
                                 </div>
                             </div> : ''
                         }
-                        {this.state.Workspaces.length!=0 ?
+                        {/* {this.state.Workspaces.length!=0 ?
                             <div>
                                 <h3 style={{marginLeft:'35px',marginTop:'10px'}}>Workspaces</h3>
                                 <div className="grid_css">
                                     {this.state.Workspaces}
                                 </div>
                             </div> : ''
-                        }
+                        } */}
                         </div> 
                 );
             } // end of modal open ie., signup 

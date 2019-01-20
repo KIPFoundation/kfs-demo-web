@@ -5,16 +5,16 @@ import { BrowserRouter as Router, Route } from "react-router-dom";
 import Logo from './kipLogo.png';
 import { Icon,Image } from 'semantic-ui-react';
 import SenderView from './senderView';
-import ReceiverView from './receiverView';
+// import ReceiverView from './receiverView';
 import FilesView from './explorer_new';
 // import FilesView from './explorer_old';
 import CreateApp from './createApp';
-import XmlForm from './xmlForm';
+// import XmlForm from './xmlForm';
 
 class Dashboard extends Component {
     render() {
         return (
-        <div style={{backgroundColor:"black"}}>
+        <div style={{backgroundColor:"black",overflow:'auto'}}>
             <div style={{display:'flex'}}>
                 <div style={{marginLeft:'45%'}}>
                     <h1 style={{color:'white'}}>KFS DEMO</h1>
@@ -75,14 +75,14 @@ class Dashboard extends Component {
                                        Read File
                                     </NavText>
                                 </NavItem> */}
-                                <NavItem eventKey="xmlForm">
+                                {/* <NavItem eventKey="xmlForm">
                                     <NavIcon>
                                         <Icon style={{ fontSize: '1.75em' }} link name='file code outline' />
                                     </NavIcon>
                                     <NavText>
                                        XML Parsing
                                     </NavText>
-                                </NavItem>
+                                </NavItem> */}
                             </SideNav.Nav>
                         </SideNav>
                         <main>
@@ -92,7 +92,7 @@ class Dashboard extends Component {
                             <Route path="/create" component={CreateApp} />
                             <Route path="/drive" component={FilesView} />
                             {/* <Route path="/read" component={ReceiverView} /> */}
-                            <Route path="/xmlForm" component={XmlForm} />
+                            {/* <Route path="/xmlForm" component={XmlForm} /> */}
                         </main>
                     </React.Fragment>
                 )}
