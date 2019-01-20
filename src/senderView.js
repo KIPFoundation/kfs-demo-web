@@ -140,7 +140,7 @@ class SenderView extends Component {
           this.setState({hashMessage:'Please choose App name',visible:true,alert:'KFS Alert'});
         }
         else {
-              const updateURL = 'http://204.48.21.88:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+              const updateURL = 'http://0.0.0.0:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
               '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
               console.log(updateURL);
               axios.get(updateURL)
@@ -161,7 +161,7 @@ class SenderView extends Component {
             }
         }
       else {
-        const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+        const url1 = 'http://0.0.0.0:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
         console.log(url1);
         axios.get(url1)
@@ -195,7 +195,7 @@ class SenderView extends Component {
               formData.append('appName', selectedWorkspace);
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-              axios.post('http://204.48.21.88:3000/upload/update', formData)
+              axios.post('http://0.0.0.0:3000/upload/update', formData)
               .then( response => {
                 if(response.data === 'false') {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -216,7 +216,7 @@ class SenderView extends Component {
           data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
           console.log(data);
           console.log()
-          axios.post('http://204.48.21.88:3000/upload', data)
+          axios.post('http://0.0.0.0:3000/upload', data)
           .then( response => {
             if(response.data === 'false') {
               this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
