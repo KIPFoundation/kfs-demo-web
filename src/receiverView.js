@@ -75,10 +75,10 @@ class ReceiverView extends Component {
     let url;
     // if(!this.state.readOnly) {
     if(false) {
-      url = 'http://204.48.21.88:3000/appdata/'+this.state.fileName+'?senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
+      url = 'http://0.0.0.0:3000/appdata/'+this.state.fileName+'?senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
     }
     else {
-      url = 'http://204.48.21.88:3000/read/'+this.state.fileName+'?senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
+      url = 'http://0.0.0.0:3000/read/'+this.state.fileName+'?senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
     }
     console.log(url);
       axios.get(url)

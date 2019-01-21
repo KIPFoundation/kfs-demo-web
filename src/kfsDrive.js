@@ -31,10 +31,10 @@ class FilesView1 extends React.Component {
     this.setState({loading:true,source:'',xml:'',content:''});
     let url = '';
     if(id == 1) {
-      url = 'http://204.48.21.88:3000/appdata/'+kfsHash+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+      url = 'http://0.0.0.0:3000/appdata/'+kfsHash+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
     }
     else {
-      url = 'http://204.48.21.88:3000/read/'+kfsHash+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
+      url = 'http://0.0.0.0:3000/read/'+kfsHash+'?reciPub='+window.btoa(this.state.receipent.toLowerCase());
     }
     console.log(url);
     axios.get(url)
@@ -94,7 +94,7 @@ class FilesView1 extends React.Component {
               </Button>
               <Button basic color='black'
                 onClick={() => {
-                  window.location = 'http://204.48.21.88:3000/ipfs/'+kfsFiles[i].kfsHash;
+                  window.location = 'http://0.0.0.0:3000/ipfs/'+kfsFiles[i].kfsHash;
                 }} >
                 Open In Gateway
               </Button>

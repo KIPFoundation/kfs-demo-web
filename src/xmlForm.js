@@ -115,7 +115,7 @@ class XmlForm extends Component {
       formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
       formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
       console.log(data);
-      axios.post('http://204.48.21.88:3000/upload', formData)
+      axios.post('http://0.0.0.0:3000/upload', formData)
       .then( response => {
         if(response.data === 'false') {
           console.log('false')
@@ -134,7 +134,7 @@ class XmlForm extends Component {
       formData.append('appID', this.state.selectApp);
       formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
       formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-      axios.post('http://204.48.21.88:3000/upload/update?', formData)
+      axios.post('http://0.0.0.0:3000/upload/update?', formData)
       .then( response => {
         if(response.data === 'false') {
           this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})

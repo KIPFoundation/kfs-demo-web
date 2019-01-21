@@ -58,7 +58,7 @@ class Drive extends React.Component {
 
 
     fetchSitemap = (appName, senderPub) => {
-        const fetchingSiteMapURL = 'http://204.48.21.88:3000/explorer?AppName='+appName+'&senderPub='+senderPub;
+        const fetchingSiteMapURL = 'http://0.0.0.0:3000/explorer?AppName='+appName+'&senderPub='+senderPub;
         axios.get(fetchingSiteMapURL)
         .then( response => {
             if(response.data){
@@ -77,7 +77,7 @@ class Drive extends React.Component {
         const desiredWorkspace = web3.utils.hexToAscii(appName).replace(/\u0000/g, '')
         console.log(desiredWorkspace.length);
         const owner = window.btoa(this.state.sender.toLowerCase());
-        const url = 'http://204.48.21.88:3000/appdata/'+desiredWorkspace+'?senderPub='+owner+'&reciPub='+owner;
+        const url = 'http://0.0.0.0:3000/appdata/'+desiredWorkspace+'?senderPub='+owner+'&reciPub='+owner;
         console.log(url);
         axios.get(url)
         .then( response => {
@@ -98,7 +98,7 @@ class Drive extends React.Component {
         });
     }
     // letTosignUpOrRenderDrive = (defaultAppName) => {
-    //     const fetchingSiteMapURL = 'http://204.48.21.88:3000/appdata/'+defaultAppName+'?sender='+defaultAppName;
+    //     const fetchingSiteMapURL = 'http://0.0.0.0:3000/appdata/'+defaultAppName+'?sender='+defaultAppName;
     //     axios.get(fetchingSiteMapURL)
     //     .then( response => {  
     //         this.renderDriveContents(response.data);
@@ -114,7 +114,7 @@ class Drive extends React.Component {
         const b64OfSender = window.btoa(this.state.sender.toLowerCase());
         // Check this for rendering of files
         const b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
-        const readingUrl = 'http://204.48.21.88:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
+        const readingUrl = 'http://0.0.0.0:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
         console.log(readingUrl);
         axios.get(readingUrl)
         .then( response => {
@@ -211,7 +211,7 @@ class Drive extends React.Component {
     // signUpWithb64 = () => {
     //     this.setState({loading:true});
     //     const b64OfSender =  window.btoa(this.state.sender.toLowerCase());
-    //     const creatingAppIdUrl = 'http://204.48.21.88:3000/createApp/'+b64OfSender+'?sender='+b64OfSender;
+    //     const creatingAppIdUrl = 'http://0.0.0.0:3000/createApp/'+b64OfSender+'?sender='+b64OfSender;
     //     axios.get(creatingAppIdUrl)
     //     .then( response => {
     //         console.log(response.data);
