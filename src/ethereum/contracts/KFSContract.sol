@@ -27,7 +27,7 @@ contract KFSContract{
     mapping(bytes32 => bool) appName_check;
     mapping(address => File[]) fileOwner_file;
     mapping(address => App[]) appOwner_app;
-    mapping(bytes32 => mapping(address => bool)) app_ownerStatus;
+    mapping(bytes32 => address) app_owner;
     // mapping(bytes32 => address[]) appName_recipients;
     mapping(bytes32 => uint) appName_index;
     mapping(bytes32 => mapping(address => bool)) appName_recipients_check;
@@ -118,7 +118,7 @@ contract KFSContract{
         app.appID = appID;
         appName_check[appName] = true;
         appName_recipients_check[appName][msg.sender] = true;
-        app_ownerStatus[appName][msg.sender] = true;
+        app_owner[appName] = msg.sender;
         saveRecipientForApp(appName, msg.sender);
         appOwner_app[msg.sender].push(app);
         appName_index[appName] = getAppCount();
@@ -160,7 +160,7 @@ contract KFSContract{
         return (allApps[index].appName, allApps[index].appID);
     }
     
-    function getAppOwner(bytes32 appName, address ownerAddress) public constant returns (bool retAppOwner){
-        return app_ownerStatus[appName][ownerAddress];
+    function getAppOwner(bytes32 appName) public constant returns (address retAppOwner){
+        return app_owner[appName];
     }
 }
