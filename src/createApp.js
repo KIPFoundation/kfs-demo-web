@@ -58,12 +58,13 @@ class ReceiverView extends Component {
             else {
               appIDHash = response.data;
               console.log(this.state.appName+" : "+appIDHash);
-              this.setState({appIDHash:appIDHash,open:true})              
+              this.setState({realContent:'Workspace named '+this.state.appName+' with KFS ID : '+appIDHash+' created successfully.',visible:true,alert:'KFS Alert'});
+              // this.setState({appIDHash:appIDHash,open:true})              
             }
           })
           .catch(error => {
             console.log(error);
-            this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+            this.setState({realContent:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
           });
   }
 

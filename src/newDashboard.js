@@ -6,8 +6,8 @@ import Logo from './kipLogo.png';
 import { Icon,Image } from 'semantic-ui-react';
 import SenderView from './senderView';
 // import ReceiverView from './receiverView';
-import FilesView from './explorer_new';
 // import FilesView from './explorer_old';
+import FilesView from './explorerView';
 import CreateApp from './createApp';
 // import XmlForm from './xmlForm';
 

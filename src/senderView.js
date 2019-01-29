@@ -180,7 +180,6 @@ class SenderView extends Component {
     }
     
     handleUpload = (event) => {
-      this.setState({uploading:true,open:true});
       if(this.state.receipent === '' || this.state.uploadedFile === '' || this.state.sender === '') {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
@@ -189,27 +188,30 @@ class SenderView extends Component {
           this.setState({hashMessage:'Please enter file name',visible:true,alert:'KFS Alert'});
         }
         else {
+          this.setState({uploading:true,open:true});
             const formData = new FormData();
-            let selectedWorkspace = web3.utils.hexToUtf8(this.state.appNames[this.state.selectApp]);
+            // let selectedWorkspace = web3.utils.hexToUtf8(this.state.appNames[this.state.selectApp]);
               formData.append('file', this.state.uploadedFile);
-              formData.append('appName', selectedWorkspace);
+              formData.append('appName', this.state.selectApp.trim());
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
+              
               axios.post('http://0.0.0.0:3000/upload/update', formData)
               .then( response => {
                 if(response.data === 'false') {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
                 }
                 else {
-                  this.setState({uploading:false,hashMessage:'File stored successfully! with \n KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
+                  this.setState({uploading:false,hashMessage:response.data,visible:false})
                 }
               })
               .catch(error => {
-                this.setState({open:false,visible:true,hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+                this.setState({open:false,visible:true,hashMessage:'Error in sending request, make sure receipent exists',visible:true,alert:'KFS Alert'});
               });
             }
           }
         else {
+          this.setState({uploading:true,open:true});
           const data = new FormData();
           data.append('file', this.state.uploadedFile);
           data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
@@ -222,11 +224,11 @@ class SenderView extends Component {
               this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
             }
             else {
-              this.setState({uploading:false,hashMessage:'File stored successfully! with \n KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
+              this.setState({open:false,uploading:false,hashMessage:'File stored successfully! with \n KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
             }
           })
           .catch(error => {
-            this.setState({open:false,visible:true,hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
+            this.setState({open:false,visible:true,hashMessage:'Error in sending request, make sure receipent exists and provided all the attributes',visible:true,alert:'KFS Alert'});
           });
         }
     }
@@ -264,11 +266,18 @@ class SenderView extends Component {
           checked={this.state.readNWrite} />
             <br /><br />
         {this.state.readNWrite ? 
+          // <Form.Field>
+          //     <Dropdown className="form-control"  placeholder="Select Folder" value={this.state.selectApp}
+          //   onChange={ (e,data) => this.setState({selectApp: data.value})}
+          //   fluid selection options={this.state.existingApps} />
+          // </Form.Field> 
           <Form.Field>
-              <Dropdown className="form-control"  placeholder="Select Folder" value={this.state.selectApp}
-            onChange={ (e,data) => this.setState({selectApp: data.value})}
-            fluid selection options={this.state.existingApps} />
-          </Form.Field> 
+            <Input style={{ width: "100%" }} 
+            name="appName"
+            value={this.state.selectApp}
+            onChange={event => this.setState({ selectApp: event.target.value})}
+          />
+        </Form.Field>  
           :
           ""
         }
@@ -384,7 +393,23 @@ class SenderView extends Component {
           <Image src={UploadingGIF} />
         </Modal.Content>
       </Modal> :
-        ''}
+      <Modal
+         open={this.state.open}
+         onClose={this.close}
+         size="small"
+       >
+       <Modal.Header>Do you want to Record this transaction in blockchain?</Modal.Header>
+        <Modal.Content>
+          <Input label='KFS FILE ID' placeholder={this.state.hashMessage} disabled/>
+        </Modal.Content>
+        <Modal.Actions>
+          <Button onClick={()=>this.setState({ open: false })} color='red'> No </Button>
+          <Button onClick={()=>{
+            this.saveToBC();
+          }} color='green'>Yes</Button>
+        </Modal.Actions>
+     </Modal>
+    }
       </div>
     );
   }
