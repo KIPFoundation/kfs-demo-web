@@ -1,14 +1,8 @@
 import React, { Component } from 'react';
-<<<<<<< HEAD
-import { Button, Form, Input, Message, Grid , TextArea, Radio ,Modal, Dropdown} from 'semantic-ui-react';
-// import logo from './logo.svg';
-import './App.css';
-=======
 import { Button, Form, Input, Message, Grid ,Image, TextArea, Radio ,Modal, Dropdown} from 'semantic-ui-react';
 // import logo from './logo.svg';
 import './App.css';
 import UploadingGIF from './uploading_image.gif'
->>>>>>> development
 import web3 from './ethereum/web3.js';
 import axios from 'axios';
 import kfs from './ethereum/kfs.js'
@@ -22,20 +16,13 @@ class SenderView extends Component {
       base64content: '',
       authErrorMessage: '',
       errorMessage: '',
-<<<<<<< HEAD
-      checked:false,
-=======
       checked:true,
->>>>>>> development
       mimeType:'',
       uploadedFile:'',
       hashMessage:'',
       visible: false,
       alert:'',
       fileName:'',
-<<<<<<< HEAD
-      open: false
-=======
       appID:'',
       readNWrite:false,
       selectApp:'',
@@ -44,26 +31,10 @@ class SenderView extends Component {
       existingReceipents:[],
       appNames:[],
       open:false
->>>>>>> development
     }
   }
   componentDidMount(){
     web3.eth.getAccounts().then((accounts, err) => {
-<<<<<<< HEAD
-      this.setState({sender: accounts[0]});
-    
-    });
-  }
-  handleDismiss = () => {
-    this.setState({ visible: false });
-  }
-  sendRequest = () => {
-      if(this.state.mimeType === '' || this.state.base64content === '' || this.state.receipent === '') {
-        this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
-      }
-      else {
-        const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
-=======
       console.log(accounts[0]);
       this.setState({sender: accounts[0]});    
     });
@@ -191,7 +162,6 @@ class SenderView extends Component {
         }
       else {
         const url1 = 'http://0.0.0.0:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
->>>>>>> development
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
         console.log(url1);
         axios.get(url1)
@@ -210,36 +180,6 @@ class SenderView extends Component {
     }
     
     handleUpload = (event) => {
-<<<<<<< HEAD
-      console.log('coming')
-      event.preventDefault();
-      const data = new FormData();
-      data.append('file', this.state.uploadedFile);
-      data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
-      data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
-      console.log(data);
-      axios.post('http://204.48.21.88:3000/upload', data)
-      .then( response => {
-        if(response.data == 'false') {
-          this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
-        }
-        else {
-          this.setState({hashMessage:response.data, open: true})
-        }
-      })
-      .catch(error => {
-        this.setState({hashMessage:'Error in sending request,Please check all the credentials or may be network is down',visible:true,alert:'KFS Alert'});
-      });
-  }
- 
-  saveToBC = async() => {
-    console.log(kfs);
-    try{
-      await kfs.methods.saveFile(web3.utils.fromAscii(this.state.fileName),this.state.hashMessage).send({
-        from: this.state.sender
-      });
-      this.setState({open:false,hashMessage:'Your File has been saved to Blockchain',visible:true,alert:'KFS Alert'})
-=======
       if(this.state.receipent === '' || this.state.uploadedFile === '' || this.state.sender === '') {
         this.setState({hashMessage:'Please enter all the credentials',visible:true,alert:'KFS Alert'});
       }
@@ -309,13 +249,10 @@ class SenderView extends Component {
         });
       }
       this.setState({open:false,hashMessage:'Your Transaction has been recorderd in Blockchain',visible:true,alert:'KFS Alert'})
->>>>>>> development
     }catch(e) {
       console.log(e);
     }
   }
-<<<<<<< HEAD
-=======
 
 
   FolderPrompt = () => {
@@ -360,7 +297,6 @@ class SenderView extends Component {
     );
   }
 
->>>>>>> development
   close = () => this.setState({ open: false });
   render() {
     const mimes = ['text/plain','text/html','image/jpeg','image/png'];
@@ -371,10 +307,6 @@ class SenderView extends Component {
         text : mime
       };
     });
-<<<<<<< HEAD
-=======
-
->>>>>>> development
     return (
       <div className="App">
         <header className="App-header">
@@ -382,15 +314,6 @@ class SenderView extends Component {
               <Grid.Row>
                 <Grid.Column width={16}>   
                     <br /><br />
-<<<<<<< HEAD
-                    <Radio toggle
-                      label={!this.state.checked ? 'Would like to send as file' : 'Would like to send as base64 content'}
-                      onClick={() => 
-                        this.setState({checked: !this.state.checked})
-                      } 
-                      checked={this.state.checked} />
-                  
-=======
                     {/* <Radio toggle
                       label='Send base64 content / Send a file'
                       onClick={() => 
@@ -398,7 +321,6 @@ class SenderView extends Component {
                       } 
                       checked={this.state.checked} /> */}
                   <br /><br />
->>>>>>> development
                   {!this.state.checked ? 
                   <Form>
                     <Form.Field>
@@ -408,20 +330,11 @@ class SenderView extends Component {
                       />
                     </Form.Field>
                     <Form.Field>
-<<<<<<< HEAD
-                      <h4>Enter Receipent's address</h4>
-                      <Input style={{ width: "100%" }} size="large"
-                      value={this.state.receipent}
-                      onChange={event => this.setState({ receipent: event.target.value})}
-                      />
-                    </Form.Field>            
-=======
                         <h4>Select Recipient</h4>
                          <Dropdown className="form-control"  placeholder="Select Receipent" value={this.state.receipent}
                         onChange={ (e,data) => this.setState({receipent: data.value})}
                         fluid selection options={this.state.existingReceipents} />
                     </Form.Field>          
->>>>>>> development
                     <Form.Field>
                       <h4>Select content's mime here</h4>
                       <Dropdown placeholder='Select Mime type' 
@@ -435,31 +348,12 @@ class SenderView extends Component {
                         onChange={event => this.setState({ base64content: event.target.value})}
                         />
                     </Form.Field>
-<<<<<<< HEAD
-                    { this.state.visible ? 
-                    <Form.Field>
-                      <Message positive
-                      onDismiss={this.handleDismiss}>
-                      <Message.Header>{this.state.alert}</Message.Header>
-                      <b>
-                      {this.state.hashMessage} 
-                      </b>
-                    </Message>
-                    </Form.Field>
-                  : ''}
-                    <Message error header="Oops!" hidden={true} onDismiss={this.errorMessageDismiss} content={this.state.errorMessage} />
-                    <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
-                  </Form>
-                :
-                <Form encType="multipart/form-data" method="post">
-=======
                     {this.FolderPrompt()}
                     <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
                   </Form>
                 :
                 // file upload
                 <Form encType="multipart/form-data" method="post">      
->>>>>>> development
                     <Form.Field>
                       <h4>Your address</h4>
                       <Input disabled size="large" name="senderPub" style={{ width: "100%"}}
@@ -477,26 +371,9 @@ class SenderView extends Component {
                     <Form.Field>
                       <h4>Upload File</h4>          
                       <input type="file" name="file" 
-<<<<<<< HEAD
-                      onChange={ event => this.setState({uploadedFile : event.target.files[0]})}/>
-                    </Form.Field>
-                    { this.state.visible ? 
-                    <Form.Field>
-                      <Message positive
-                      onDismiss={this.handleDismiss}>
-                      <Message.Header>{this.state.alert}</Message.Header>
-                      <b>
-                      {this.state.hashMessage} 
-                      </b>
-                    </Message>
-                    </Form.Field>
-                  : ''}
-                    <Message error header="Oops!" hidden={true} onDismiss={this.errorMessageDismiss} content={this.state.errorMessage} />
-=======
                       onChange={ event => this.mimCheck(event.target.files[0])}/>
                     </Form.Field> 
                     {this.FolderPrompt()}
->>>>>>> development
                     <br/><Button onClick={this.handleUpload} primary>Submit</Button>
                   </Form>
                 }
@@ -504,30 +381,6 @@ class SenderView extends Component {
             </Grid.Row>
           </Grid>
         </header>
-<<<<<<< HEAD
-        <Modal
-          open={this.state.open}
-          onClose={this.close}
-        >
-          <Modal.Header>Save File ID in Blockchain</Modal.Header>
-          <Modal.Content>
-            
-            <Input style={{width:'70%'}} label="KFS File ID    " disabled type="text" value={this.state.hashMessage}/><br /><br />
-            <Input style={{width:'70%'}} label="Enter File Name" 
-            onChange={event => this.setState({fileName:event.target.value})} 
-            value={this.state.fileName} type="text" placeholder="Enter file name to be saved with"/>
-            <p>Are you sure you want to save your file id</p>
-          </Modal.Content>
-          <Modal.Actions>
-            <Button onClick={this.close} negative>
-              No
-            </Button>
-            <Button onClick={this.saveToBC} positive>
-              Save
-            </Button>
-          </Modal.Actions>
-        </Modal>
-=======
         {this.state.uploading ? 
         <Modal
           open={this.state.open}
@@ -556,7 +409,6 @@ class SenderView extends Component {
         </Modal.Actions>
      </Modal>
     }
->>>>>>> development
       </div>
     );
   }

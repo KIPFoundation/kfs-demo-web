@@ -1,23 +1,12 @@
 pragma solidity ^0.4.24;
 pragma experimental ABIEncoderV2;
-<<<<<<< HEAD
-
-=======
  
->>>>>>> development
 contract KFSContract{
     
     struct File{
         bytes32 fileName;
         string kfsHash;
     }
-<<<<<<< HEAD
-    File[] allFiles;
-    
-    address owner;
-    mapping(bytes32 => bool) files;
-    mapping(address => File[]) fileOwner_file;
-=======
     File[] public allFiles; // To optimize gas, only fileName can be pushed and a mapping(bytes32 => File) could be created down the line
     
     struct Update{
@@ -46,7 +35,6 @@ contract KFSContract{
     
     event AppUpdated(bytes32 appName, address updater, uint updationDate, string latestHash);
     event Read(bytes32 name, address reader, uint timeofRead);
->>>>>>> development
     
     modifier onlyOwner{
         require(msg.sender == owner);
@@ -56,39 +44,6 @@ contract KFSContract{
     function KFSContract(){
         owner = msg.sender;
     }
-<<<<<<< HEAD
-    
-    function saveFile(bytes32 _fileName, string _fileHash) public returns (bool saveFileBool){
-        require(files[_fileName] == false);
-        File memory file = File({fileName: _fileName, kfsHash: _fileHash});
-        fileOwner_file[msg.sender].push(file);
-        files[_fileName] = true;
-        allFiles.push(file);
-        return true;
-    }
-    
-    function getAllFiles(uint fileIndex) onlyOwner constant returns (File retFiles){
-        return allFiles[fileIndex];
-    }
-    
-    function getFile(uint fileIndex) public constant returns (bytes32 retFileName, string retFileHash){
-        return (fileOwner_file[msg.sender][fileIndex].fileName, fileOwner_file[msg.sender][fileIndex].kfsHash);
-    }
-    
-    function getFileStruct(uint fileIndex) public constant returns (File retFile){
-        return fileOwner_file[msg.sender][fileIndex];
-    }
-    
-    function getFilesLength() public constant returns (uint retFilesLength){
-        return fileOwner_file[msg.sender].length;
-    }
-    
-    function getFilesStruct() public constant returns (File[] retFiles){
-        return fileOwner_file[msg.sender];
-    }
-    
-}
-=======
  
     function createFile(bytes32 _fileName, string _fileHash, address recipient) public returns (bool saveFileBool){
         require(fileName_check[_fileName] == false);
@@ -209,4 +164,3 @@ contract KFSContract{
         return app_owner[appName];
     }
 }
->>>>>>> development

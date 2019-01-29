@@ -9,13 +9,8 @@ if(typeof window !== 'undefined' && typeof window.web3 !== 'undefined'){
   // We are on the server *OR* the user is not running metamask
   // Private Network: 'http://159.65.80.74:8991/', 'http://142.93.177.142:8991/'
   const provider = new Web3.providers.HttpProvider(
-<<<<<<< HEAD
-    'http://159.65.80.74:8991/'
-    // 'http://142.93.177.142:8991/'
-=======
     'http://142.93.251.210:8991/'
     // 'https://a0veaj9up1:ikr5_TjibloNaLf-AGkr2CBclqJnAcRMWe0wbQG6OXU@a0m04kiucb-a0ius3yioh-rpc.ap-southeast-2.kaleido.io'
->>>>>>> development
   );
   web3 = new Web3(provider);
 }
