@@ -3,14 +3,31 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+<<<<<<< HEAD
     "axios": "^0.18.0",
     "react": "^16.6.0",
     "react-dom": "^16.6.0",
+=======
+    "@trendmicro/react-sidenav": "^0.4.5",
+    "axios": "^0.18.0",
+    "file-system": "^2.2.2",
+    "ipfs-unixfs": "^0.1.16",
+    "ipld-dag-pb": "^0.15.0",
+    "react": "^16.6.0",
+    "react-dom": "^16.6.0",
+    "react-player": "^1.8.0",
+>>>>>>> development
     "react-router-dom": "^4.3.1",
     "react-scripts": "2.0.5",
     "semantic-ui-css": "^2.4.1",
     "semantic-ui-react": "^0.83.0",
+<<<<<<< HEAD
     "web3": "^1.0.0-beta.36"
+=======
+    "solc": "^0.4.25",
+    "web3": "^1.0.0-beta.36",
+    "xml-writer": "^1.7.0"
+>>>>>>> development
   },
   "scripts": {
     "start": "PORT=3006 react-scripts start",
