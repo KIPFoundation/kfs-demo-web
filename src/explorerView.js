@@ -4,7 +4,7 @@ import web3 from './ethereum/web3.js';
 import axios from 'axios';
 import loadingGIF from './loader.gif';
 import kfs from './ethereum/kfs.js';
-let receipentAndFileHashObject = {};
+// let receipentAndFileHashObject = {};
 class Drive extends React.Component {
     constructor(props) {
         super(props);
@@ -39,6 +39,7 @@ class Drive extends React.Component {
             driveEmpty:false,
             openModalToSeeFile:false,
             openFileName:'',
+            deletionContent:'Delete the file',
             gridsOpen:[false,false,false,false]
         }
     }
@@ -55,7 +56,6 @@ class Drive extends React.Component {
     renderDrive = (explorer) => {
             this.setState({ readRequest:false })
             this.renderAppContents(explorer);
-            this.renderWorkspaces();    
     }
 
     removeFile = () => {
@@ -65,13 +65,16 @@ class Drive extends React.Component {
         console.log(removeEndpoint);
         axios.get(removeEndpoint)
         .then(response => {
-            console.log(response);
+            if(response.data == 'Permission denied') {
+                this.setState({deletionContent:"Permission denied"});
+            }
+            else {
+                this.setState({deletionContent:"File has Removed"});
+            }
         })
         .catch(e => {
             console.log(e);
         })
-        this.setState({removeToggle:false});
-        this.fetchSitemap(b64Sender, b64Sender);
     }
 
 
@@ -87,18 +90,18 @@ class Drive extends React.Component {
                 if(response.data.InvitedFilesAndApps == null && response.data.CreatedFilesAndApps == null) {
                     this.setState({loading:false,driveEmpty:true});
                 }
-                if(response.data.CreatedFilesAndApps != null) {
-                    const arrayWithRecipentsAndFileHashes = this.state.siteMap.CreatedFiles;
-                    for(let row of arrayWithRecipentsAndFileHashes) {
-                        receipentAndFileHashObject[row.file_hash] = row.receiver_pub;
-                    }
-                }
-                if(response.data.InvitedFilesAndApps != null) { 
-                    const tempArrayWithRecipentsAndFileHashes = this.state.siteMap.InvitedFiles;
-                    for(let row of tempArrayWithRecipentsAndFileHashes) {
-                        receipentAndFileHashObject[row.file_hash] = senderPub;
-                    }
-                }  
+                // if(response.data.CreatedFilesAndApps != null) {
+                //     const arrayWithRecipentsAndFileHashes = this.state.siteMap.CreatedFiles;
+                //     for(let row of arrayWithRecipentsAndFileHashes) {
+                //         receipentAndFileHashObject[row.file_hash] = row.receiver_pub;
+                //     }
+                // }
+                // if(response.data.InvitedFilesAndApps != null) { 
+                //     const tempArrayWithRecipentsAndFileHashes = this.state.siteMap.InvitedFiles;
+                //     for(let row of tempArrayWithRecipentsAndFileHashes) {
+                //         receipentAndFileHashObject[row.file_hash] = senderPub;
+                //     }
+                // }  
                 this.renderDrive(response.data);
             }
         })
@@ -108,51 +111,19 @@ class Drive extends React.Component {
         });
     }
 
-    fetchSitemap = (appName, senderPub) => {
-        const fetchingSiteMapURL = 'http://0.0.0.0:3000/explorer?AppName='+appName+'&senderPub='+senderPub;
-        console.log(fetchingSiteMapURL);
-        axios.get(fetchingSiteMapURL)
-        .then( response => {
-            if(response.data){
-               if(appName == senderPub){
-                    this.setState({siteMap: response.data});
-                }
-                if(response.data.CreatedFilesAndApps == null && response.data.InvitedFilesAndApps == null) {
-                    this.setState({loading:false,driveEmpty:true});
-                }
-                if(response.data.CreatedFilesAndApps != null) {
-                    const arrayWithRecipentsAndFileHashes = this.state.siteMap.CreatedFilesAndApps;
-                    for(let row of arrayWithRecipentsAndFileHashes) {
-                        receipentAndFileHashObject[row.file_hash] = row.receiver_pub;
-                    }
-                }
-                if(response.data.InvitedFilesAndApps != null) { 
-                    const tempArrayWithRecipentsAndFileHashes = this.state.siteMap.InvitedFilesAndApps;
-                    for(let row of tempArrayWithRecipentsAndFileHashes) {
-                        receipentAndFileHashObject[row.file_hash] = senderPub;
-                    }
-                }  
-                this.renderDrive(response.data);
-            }
-        })
-        .catch(error => {
-            console.log('Error in Fetching SiteMap --> ' + error);
-            this.setState({loading:false,open:true});
-        });
-    }
 
     fetchSitemapOfWorkspace = (appName,benefactor) => {
+        console.log(appName);
         this.setState({openWorkspace:appName,readRequest:true});
         const b64OfUser = window.btoa(this.state.sender.toLowerCase());
-        const userHelpingInFetching = benefactor == 'self' ? b64OfUser : benefactor;
-        // const url = 'http://0.0.0.0:3000/appdata/'+appName+'?senderPub='+owner+'&reciPub='+owner;
-        const url = 'http://0.0.0.0:3000/appdata/'+appName+'?reciPub='+userHelpingInFetching;
+        // const userHelpingInFetching = benefactor == 'self' ? b64OfUser : benefactor;
+        const url = 'http://0.0.0.0:3000/appdata/'+appName+'?reciPub='+b64OfUser;
         console.log(url);
         axios.get(url)
         .then( response => {
             const innerFiles = response.data.files;
-            console.log(innerFiles);
             let innerContents = [];
+            if(innerFiles!=null) {
                 for(let innerFile of innerFiles) {
                     innerContents.push( ( <div className="card" key={innerFile.file_hash}>
                                                 <div style={{width:'210px'}}
@@ -165,26 +136,29 @@ class Drive extends React.Component {
                                                     this.setState({fileToBeDeleted : innerFile.file_name , fileHashToBeDeleted: innerFile.file_hash, removeToggle:true})} />
                                         </div>) );
                 }
-            this.setState({openWorkspaceAction:true,workspaceInnerContents:innerContents})
+            this.setState({openWorkspaceAction:true,removeToggle:false,workspaceInnerContents:innerContents})
+            }
         })
         .catch(error => {
             console.log(error);
-        });
+            this.setState({removeToggle:false});
+        });      
     }
 
     renderFile = (fileToBeRead, receipentAddress, appHistory,fileName,iteration) => {
         // this.setState({readRequest:true,appHistory:appHistory,source:'',fileLoading:true,openWorkspaceAction:false});
         this.setState({openModalToSeeFile:true,openFileName:fileName,errorWhileFetching:''})
-        const b64OfSender = window.btoa(this.state.sender.toLowerCase());
+        // const b64OfSender = window.btoa(this.state.sender.toLowerCase());
+        const b64OfReceipent = window.btoa(this.state.sender.toLowerCase());
         // Check this for rendering of files
-        let b64OfReceipent;
-        if(receipentAddress == 'getRecipent')
-        {
-            b64OfReceipent = receipentAndFileHashObject[fileToBeRead];
-        }
-        else {
-             b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
-        }
+        // let b64OfReceipent;
+        // if(receipentAddress == 'getRecipent')
+        // {
+        //     b64OfReceipent = receipentAndFileHashObject[fileToBeRead];
+        // }
+        // else {
+        //      b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
+        // }
         
         const readingUrl = 'http://0.0.0.0:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
         console.log(readingUrl);
@@ -236,7 +210,6 @@ class Drive extends React.Component {
     }
 
     renderAppContents = async (siteMap) => {
-        console.log(siteMap)
         let tempInvitedFiles = [];
         let tempCreatedFiles = [];
         let tempInvitedApps = [];
@@ -461,20 +434,30 @@ class Drive extends React.Component {
                     </div>
                     <div>
                         <Modal basic size='small' open={this.state.removeToggle} >
-                            <Header icon='trash alternate' content='Delete the file' />
+                            <Header icon='trash alternate' content={this.state.deletionContent} />
                             <Modal.Content>
-                            <p>
-                                Are you sure that you want to delete the file called <b>{this.state.fileToBeDeleted}</b>
-                            </p>
-                            </Modal.Content>
+                                {this.state.deletionContent == 'Delete the file'?
+                                <p>
+                                    Are you sure that you want to delete the file called <b>{this.state.fileToBeDeleted}</b>
+                                </p> :''}
+                                </Modal.Content>
+                            {this.state.deletionContent == 'Delete the file'?
                             <Modal.Actions>
-                            <Button onClick={() => this.setState({removeToggle:false})} basic color='red' inverted>
-                                <Icon name='remove' /> No
-                            </Button>
-                            <Button onClick={() => this.removeFile()} color='green' inverted>
-                                <Icon name='checkmark' /> Yes
-                            </Button>
-                            </Modal.Actions>
+                                <Button onClick={() => {
+                                    ;this.setState({removeToggle:false});
+                                }} basic color='red' inverted>
+                                    <Icon name='remove' /> No
+                                </Button>
+                                <Button onClick={() => this.removeFile()} color='green' inverted>
+                                    <Icon name='checkmark' /> Yes
+                                </Button>
+                            </Modal.Actions> :
+                            <Modal.Actions>
+                                <Button onClick={() => this.fetchSitemapOfWorkspace(this.state.openWorkspace)} basic color='green' inverted>
+                                    <Icon name='remove' /> Close
+                                </Button>
+                            </Modal.Actions> 
+                            }
                         </Modal>
                     </div>
                     {this.state.openModalToSeeFile? 

@@ -30,7 +30,7 @@ class SenderView extends Component {
       existingApps:[],
       existingReceipents:[],
       appNames:[],
-      open:false
+      open:true
     }
   }
   componentDidMount(){
@@ -52,7 +52,7 @@ class SenderView extends Component {
         };
       }
       this.setState({existingReceipents : tempReceipents});
-    this.getAppsOwned();
+    // this.getAppsOwned();
   }
 
   getAppsOwned = async () => {
@@ -202,7 +202,7 @@ class SenderView extends Component {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
                 }
                 else {
-                  this.setState({uploading:false,hashMessage:response.data,visible:false})
+                  this.setState({open:false,uploading:false,hashMessage:'File stored successfully with KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
                 }
               })
               .catch(error => {
@@ -217,14 +217,13 @@ class SenderView extends Component {
           data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
           data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
           console.log(data);
-          console.log()
           axios.post('http://0.0.0.0:3000/upload', data)
           .then( response => {
             if(response.data === 'false') {
               this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
             }
             else {
-              this.setState({open:false,uploading:false,hashMessage:'File stored successfully! with \n KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
+              this.setState({open:false,uploading:false,hashMessage:'File stored successfully with KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
             }
           })
           .catch(error => {
@@ -383,33 +382,14 @@ class SenderView extends Component {
           </Grid>
         </header>
         {this.state.uploading ? 
-        <Modal
-          open={this.state.open}
-          onClose={this.close}
-          size="mini"
-        >
-        <Modal.Header>Uploading to KFS ...</Modal.Header>
-        <Modal.Content>
-          <Image src={UploadingGIF} />
-        </Modal.Content>
-      </Modal> :
-      <Modal
-         open={this.state.open}
-         onClose={this.close}
-         size="small"
-       >
-       <Modal.Header>Do you want to Record this transaction in blockchain?</Modal.Header>
-        <Modal.Content>
-          <Input label='KFS FILE ID' placeholder={this.state.hashMessage} disabled/>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button onClick={()=>this.setState({ open: false })} color='red'> No </Button>
-          <Button onClick={()=>{
-            this.saveToBC();
-          }} color='green'>Yes</Button>
-        </Modal.Actions>
-     </Modal>
-    }
+          <div className="modal">
+            <div className="modal-content"> 
+              <center>
+                <span style={{color:'white',fontSize:'24px'}}>Uploading to KFS ...</span>
+                <Image style={{marginTop:'150px'}} height="350" width="400" src={UploadingGIF} />
+                </center>
+            </div>
+        </div> : ""}
       </div>
     );
   }

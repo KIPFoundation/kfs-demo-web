@@ -34,7 +34,7 @@ class Dashboard extends Component {
                                 }
                             }}>
                             <SideNav.Toggle />
-                            <SideNav.Nav defaultSelected="send">
+                            <SideNav.Nav defaultSelected="drive">
                                 <NavItem eventKey="send">
                                     <NavIcon>
                                         <Icon style={{ fontSize: '1.75em' }} link name='send' />
@@ -86,7 +86,7 @@ class Dashboard extends Component {
                             </SideNav.Nav>
                         </SideNav>
                         <main>
-                            <Route path="/" exact component={SenderView} />
+                            <Route path="/" exact component={FilesView} />
                             <Route path="/send" component={SenderView} />
                             {/* <Route path="/upload" component={SenderView} /> */}
                             <Route path="/create" component={CreateApp} />
