@@ -136,8 +136,8 @@ class Drive extends React.Component {
                                                     this.setState({fileToBeDeleted : innerFile.file_name , fileHashToBeDeleted: innerFile.file_hash, removeToggle:true})} />
                                         </div>) );
                 }
-            this.setState({openWorkspaceAction:true,removeToggle:false,workspaceInnerContents:innerContents})
             }
+            this.setState({openWorkspaceAction:true,removeToggle:false,workspaceInnerContents:innerContents})
         })
         .catch(error => {
             console.log(error);
