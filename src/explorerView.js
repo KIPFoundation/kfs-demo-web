@@ -1,9 +1,9 @@
 import React from 'react';
 import { Icon,Modal,Header,Button,Image } from 'semantic-ui-react';
-import web3 from './ethereum/web3.js';
+import web3 from './web3.js';
 import axios from 'axios';
 import loadingGIF from './loader.gif';
-import kfs from './ethereum/kfs.js';
+// import kfs from './ethereum/kfs.js';
 // let receipentAndFileHashObject = {};
 class Drive extends React.Component {
     constructor(props) {
@@ -39,6 +39,7 @@ class Drive extends React.Component {
             driveEmpty:false,
             openModalToSeeFile:false,
             openFileName:'',
+            openWorkspaceHash:'',
             deletionContent:'Delete the file',
             gridsOpen:[false,false,false,false]
         }
@@ -49,7 +50,6 @@ class Drive extends React.Component {
         const accounts = await web3.eth.getAccounts();
         const b64Sender = window.btoa(accounts[0].toLowerCase());
         this.setState({sender : accounts[0]});
-        // this.renderAppContents(example);
         this.fetchSitemap(b64Sender, b64Sender);
     }
 
@@ -61,7 +61,7 @@ class Drive extends React.Component {
     removeFile = () => {
         const b64Sender = window.btoa(this.state.sender.toLowerCase());
         // console.log(this.state.fileToBeDeleted+" : "+this.state.fileHashToBeDeleted+" : "+this.state.openWorkspace);
-        const removeEndpoint = 'http://0.0.0.0:3000/Remove?appName='+this.state.openWorkspace+'&senderPub='+b64Sender+'&name='+this.state.fileToBeDeleted+'&hash='+this.state.fileHashToBeDeleted;
+        const removeEndpoint = 'http://localhost:3000/Remove?appName='+this.state.openWorkspace+'&senderPub='+b64Sender+'&name='+this.state.fileToBeDeleted+'&hash='+this.state.fileHashToBeDeleted;
         console.log(removeEndpoint);
         axios.get(removeEndpoint)
         .then(response => {
@@ -79,7 +79,7 @@ class Drive extends React.Component {
 
 
     fetchSitemap = (appName, senderPub) => {
-        const fetchingSiteMapURL = 'http://0.0.0.0:3000/explorer?AppName='+appName+'&senderPub='+senderPub;
+        const fetchingSiteMapURL = 'http://localhost:3000/explorer?AppName='+appName+'&senderPub='+senderPub;
         console.log(fetchingSiteMapURL);
         axios.get(fetchingSiteMapURL)
         .then( response => {
@@ -90,18 +90,6 @@ class Drive extends React.Component {
                 if(response.data.InvitedFilesAndApps == null && response.data.CreatedFilesAndApps == null) {
                     this.setState({loading:false,driveEmpty:true});
                 }
-                // if(response.data.CreatedFilesAndApps != null) {
-                //     const arrayWithRecipentsAndFileHashes = this.state.siteMap.CreatedFiles;
-                //     for(let row of arrayWithRecipentsAndFileHashes) {
-                //         receipentAndFileHashObject[row.file_hash] = row.receiver_pub;
-                //     }
-                // }
-                // if(response.data.InvitedFilesAndApps != null) { 
-                //     const tempArrayWithRecipentsAndFileHashes = this.state.siteMap.InvitedFiles;
-                //     for(let row of tempArrayWithRecipentsAndFileHashes) {
-                //         receipentAndFileHashObject[row.file_hash] = senderPub;
-                //     }
-                // }  
                 this.renderDrive(response.data);
             }
         })
@@ -112,12 +100,11 @@ class Drive extends React.Component {
     }
 
 
-    fetchSitemapOfWorkspace = (appName,benefactor) => {
-        console.log(appName);
-        this.setState({openWorkspace:appName,readRequest:true});
+    fetchSitemapOfWorkspace = (appName,appHash,benefactor) => {
+        this.setState({openWorkspace:appName,openWorkspaceHash:appHash,readRequest:true});
         const b64OfUser = window.btoa(this.state.sender.toLowerCase());
         // const userHelpingInFetching = benefactor == 'self' ? b64OfUser : benefactor;
-        const url = 'http://0.0.0.0:3000/appdata/'+appName+'?reciPub='+b64OfUser;
+        const url = 'http://localhost:3000/appdata/'+appHash+'?reciPub='+b64OfUser;
         console.log(url);
         axios.get(url)
         .then( response => {
@@ -137,7 +124,7 @@ class Drive extends React.Component {
                                         </div>) );
                 }
             }
-            this.setState({openWorkspaceAction:true,removeToggle:false,workspaceInnerContents:innerContents})
+            this.setState({deletionContent:'Delete the file',openWorkspaceAction:true,removeToggle:false,workspaceInnerContents:innerContents})
         })
         .catch(error => {
             console.log(error);
@@ -160,7 +147,7 @@ class Drive extends React.Component {
         //      b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
         // }
         
-        const readingUrl = 'http://0.0.0.0:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
+        const readingUrl = 'http://localhost:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
         console.log(readingUrl);
         axios.get(readingUrl)
         .then( response => {
@@ -170,10 +157,10 @@ class Drive extends React.Component {
             console.log('UnAuthorized Attempt');
           }
           else {
-            if(returnType === 'image/jpeg' || returnType === 'image/png' || returnType === 'image/gif' || returnType === 'image/jpg') {
+            if(returnType === 'image/jpeg' || returnType === 'image/png' || returnType === 'image/gif' || returnType === 'image/jpg' ) {
               this.setState({source:readingUrl, imageContent:true , fileLoading:false});
             }
-            else if(returnType == 'video/mp4' || returnType == 'video/quicktime' || returnType == 'video/x-flv' || returnType == 'video/x-msvideo' || returnType == 'video/x-matroska') {
+            else if(returnType == 'video/mp4' || returnType == 'video/quicktime' || returnType == 'video/x-flv' || returnType == 'video/x-msvideo' || returnType == 'video/x-matroska' || returnType === 'application/JSON') {
                 const url = window.URL.createObjectURL(new Blob([readingUrl]));
                 const link = document.createElement('a');
                 link.href = url;
@@ -235,7 +222,7 @@ class Drive extends React.Component {
             else {
             invitedFileOrApp = (
                 <div className="card" key={invitedFile.app_hash}
-                    onClick={() => this.fetchSitemapOfWorkspace(invitedFile.app_name,'self')}>
+                    onClick={() => this.fetchSitemapOfWorkspace(invitedFile.app_name,invitedFile.app_hash,'self')}>
                     <div>
                             <Icon name='folder' />
                             <span>{invitedFile.app_name}</span>
@@ -266,7 +253,7 @@ class Drive extends React.Component {
             else {
                 createdFileOrApp = (
                 <div className="card" key={createdFile.app_hash}
-                    onClick={() => this.fetchSitemapOfWorkspace(createdFile.app_name,createdFile.receiver_pub)}>
+                    onClick={() => this.fetchSitemapOfWorkspace(createdFile.app_name,createdFile.app_hash,createdFile.receiver_pub)}>
                     <div>
                             <Icon name='folder' />
                             <span>{createdFile.app_name}</span>
@@ -280,43 +267,43 @@ class Drive extends React.Component {
         this.setState({ openWorkspaceAction:false,readRequest:false, createdWorkpaces:tempCreatedApps,workspacesThatHasAccess:tempInvitedApps , InvitedFiles:tempInvitedFiles, CreatedFiles:tempCreatedFiles, open:false, loading:false})
     }
 
-    renderWorkspaces = async () => {
-        this.setState({ Workspaces : [] });
-        const kfsAppsReplicated = await kfs.methods.getAppsOfOwner().call({from:this.state.sender});
-        // console.log(await kfs.methods.getAppOwner(kfsAppsReplicated[1].appName).call({from : this.state.sender}));
-        let pieSet1 = new Set();
-        let kfsApps = [];
-        let j1 = 0;
-        for(let i=0;i<kfsAppsReplicated.length;i++)  {
-            if(!pieSet1.has(kfsAppsReplicated[i].appName)) {
-                kfsApps[j1] = kfsAppsReplicated[i];
-                j1++;
-                pieSet1.add(kfsAppsReplicated[i].appName);
-            }
-        }
-        let tempWorkspaces = [];
-        for(let workspace of kfsApps) {
-            //uncomment first onClick event and comment second onclick once sitemap is ready
-            // The second param in the fetchSitemap function should be the senderPub (in base64 encoded format) 
-            const currentAppName = web3.utils.hexToUtf8(workspace.appName)
-            tempWorkspaces.push( (<button className="card" key={workspace.appName}
-                                        onClick={() => this.fetchSitemapOfWorkspace(workspace.appName)}>                                        
-                                           {/* onClick={() => {
-                                            this.setState({openWorkspace:currentAppName})
-                                            this.renderAppContents(siteMap)}
-                                        }>  */}
-                                            <Icon name='folder' />
-                                            <span>{currentAppName}</span>
-                                        </button>) );
-        }
+    // renderWorkspaces = async () => {
+    //     this.setState({ Workspaces : [] });
+    //     const kfsAppsReplicated = await kfs.methods.getAppsOfOwner().call({from:this.state.sender});
+    //     // console.log(await kfs.methods.getAppOwner(kfsAppsReplicated[1].appName).call({from : this.state.sender}));
+    //     let pieSet1 = new Set();
+    //     let kfsApps = [];
+    //     let j1 = 0;
+    //     for(let i=0;i<kfsAppsReplicated.length;i++)  {
+    //         if(!pieSet1.has(kfsAppsReplicated[i].appName)) {
+    //             kfsApps[j1] = kfsAppsReplicated[i];
+    //             j1++;
+    //             pieSet1.add(kfsAppsReplicated[i].appName);
+    //         }
+    //     }
+    //     let tempWorkspaces = [];
+    //     for(let workspace of kfsApps) {
+    //         //uncomment first onClick event and comment second onclick once sitemap is ready
+    //         // The second param in the fetchSitemap function should be the senderPub (in base64 encoded format) 
+    //         const currentAppName = web3.utils.hexToUtf8(workspace.appName)
+    //         tempWorkspaces.push( (<button className="card" key={workspace.appName}
+    //                                     onClick={() => this.fetchSitemapOfWorkspace(workspace.appName)}>                                        
+    //                                        {/* onClick={() => {
+    //                                         this.setState({openWorkspace:currentAppName})
+    //                                         this.renderAppContents(siteMap)}
+    //                                     }>  */}
+    //                                         <Icon name='folder' />
+    //                                         <span>{currentAppName}</span>
+    //                                     </button>) );
+    //     }
 
-        this.setState({ Workspaces : tempWorkspaces , loading:false});
-    }
+    //     this.setState({ Workspaces : tempWorkspaces , loading:false});
+    // }
 
     signUpWithb64 = () => {
         this.setState({loading:true});
         const b64OfSender =  window.btoa(this.state.sender.toLowerCase());
-        const creatingDefaultAppIdUrl = 'http://0.0.0.0:3000/createAppID/'+b64OfSender+'?sender='+b64OfSender;
+        const creatingDefaultAppIdUrl = 'http://localhost:3000/createAppID/'+b64OfSender+'?sender='+b64OfSender;
         console.log(creatingDefaultAppIdUrl);
         axios.get(creatingDefaultAppIdUrl)
         .then( response => {
@@ -453,7 +440,7 @@ class Drive extends React.Component {
                                 </Button>
                             </Modal.Actions> :
                             <Modal.Actions>
-                                <Button onClick={() => this.fetchSitemapOfWorkspace(this.state.openWorkspace)} basic color='green' inverted>
+                                <Button onClick={() => this.fetchSitemapOfWorkspace(this.state.openWorkspace,this.state.openWorkspaceHash)} basic color='green' inverted>
                                     <Icon name='remove' /> Close
                                 </Button>
                             </Modal.Actions> 
