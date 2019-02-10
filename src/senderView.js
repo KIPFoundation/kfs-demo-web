@@ -293,7 +293,6 @@ class SenderView extends Component {
         text : mime
       };
     });
-
     return (
       <div className="App">
         <header className="App-header">
