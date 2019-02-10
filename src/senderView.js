@@ -3,9 +3,9 @@ import { Button, Form, Input, Message, Grid ,Image, TextArea, Radio ,Modal, Drop
 // import logo from './logo.svg';
 import './App.css';
 import UploadingGIF from './uploading_image.gif'
-import web3 from './ethereum/web3.js';
+import web3 from './web3.js';
 import axios from 'axios';
-import kfs from './ethereum/kfs.js'
+// import kfs from './ethereum/kfs.js'
 class SenderView extends Component {
   constructor(props){
     super(props);
@@ -30,74 +30,71 @@ class SenderView extends Component {
       existingApps:[],
       existingReceipents:[],
       appNames:[],
-      open:false
+      open:true
     }
   }
-  componentDidMount(){
+  async componentDidMount(){
     web3.eth.getAccounts().then((accounts, err) => {
-      console.log(accounts[0]);
-      this.setState({sender: accounts[0]});    
+        this.setState({sender: accounts[0]});   
+         this.fetchSitemap(accounts[0]);
     });
-    let tempReceipents = [];
-    const receipents = ['0x8c059e23890ad6e2A423FB5235956e17C7C92d7f','0xD14dc708F6CAb1dF5461F893EB46372db2b54CD8',
-    '0x4887BE9f52EfE77F1582107576153DD33071689c','0x9F2C95cDC960b6A2bb9f883b478619bead1c57eE','0x664f3AAE10020BCc201CaaCE4394A93191E487f3',
-    '0x377175F8588F6f5f4dBA7Af65924AB69b00A60B6','0xa600B64E72E770A30e40467004B8548a77874921','0x56e988eeF6F15aE8b21754f9bD9c3640f1222804',
-    '0x5118f12e9fddccf4e91efa0ac54311f94cf6d871','0x84365fb3525b3acfd6add41cf57a214d6bfdf0b7'];
-    let i = 0;
-    for(let receiver of receipents) {
-        tempReceipents[i++] = {
-          key : receiver,
-          value : receiver,
-          text :'Employee - '+i
-        };
-      }
-      this.setState({existingReceipents : tempReceipents});
-    this.getAppsOwned();
+    // let tempReceipents = [];
+    // const receipents = ['0x8c059e23890ad6e2A423FB5235956e17C7C92d7f','0xD14dc708F6CAb1dF5461F893EB46372db2b54CD8',
+    // '0x4887BE9f52EfE77F1582107576153DD33071689c','0x9F2C95cDC960b6A2bb9f883b478619bead1c57eE','0x664f3AAE10020BCc201CaaCE4394A93191E487f3',
+    // '0x377175F8588F6f5f4dBA7Af65924AB69b00A60B6','0xa600B64E72E770A30e40467004B8548a77874921','0x56e988eeF6F15aE8b21754f9bD9c3640f1222804',
+    // '0x5118f12e9fddccf4e91efa0ac54311f94cf6d871','0x84365fb3525b3acfd6add41cf57a214d6bfdf0b7'];
+    // let i = 0;
+    // for(let receiver of receipents) {
+    //     tempReceipents[i++] = {
+    //       key : receiver,
+    //       value : receiver,
+    //       text :'Employee - '+i
+    //     };
+    //   }
+    //   this.setState({existingReceipents : tempReceipents});
   }
 
-  getAppsOwned = async () => {
-    try {
-      const accounts = await web3.eth.getAccounts();
-      const kfsAppsReplicated = await kfs.methods.getAppsOfOwner().call({from:this.state.sender});
-        let pieSet1 = new Set();
-        let kfsApps = [];
-        let j1 = 0;
-        for(let i=0;i<kfsAppsReplicated.length;i++)  {
-            if(!pieSet1.has(kfsAppsReplicated[i].appName)) {
-                kfsApps[j1] = kfsAppsReplicated[i];
-                j1++;
-                pieSet1.add(kfsAppsReplicated[i].appName);
+  fetchSitemap = (sender) => {
+    console.log(this.state.sender);
+    const b64OfUser = window.btoa(sender.toLowerCase());
+    let tempOwnedApps = [];
+    const fetchingSiteMapURL = 'http://localhost:3000/explorer?AppName='+b64OfUser+'&senderPub='+b64OfUser;
+    console.log(fetchingSiteMapURL);
+    axios.get(fetchingSiteMapURL)
+    .then( response => {
+            const siteMap = response.data;
+            if(siteMap.InvitedFilesAndApps == null && siteMap.CreatedFilesAndApps == null) {
+                console.log('empty');
             }
-        }
-        this.setState({ existingApps : kfsApps });
-      let appNames = [];
-      let appIds = [];
-      const appsLength = kfsApps.length;
-      if(appsLength!=0) {
-        for(let i=0;i<appsLength;i++) {
-          console.log(i);
-           appNames[i] = kfsApps[i].appName; 
-           appIds[i] = kfsApps[i].appID;
-        }
-        var bytes32Array = {};
-        appIds.forEach((key, i) => bytes32Array[key] = appNames[i]);
-        console.log(bytes32Array);
-
-        let tempOwnedApps = [];
-        let i=0;
-        for(let appName of appNames) {
-          let text1 = web3.utils.hexToUtf8(appName);
-          tempOwnedApps[i] = {
-            key : appName,
-            value : appIds[i++],
-            text : text1
-          };
-        }
-        this.setState({ existingApps : tempOwnedApps , appNames : bytes32Array  });
-      }
-    } catch(err){
-      console.log(err);
-    }
+            else {
+              let i = 0;
+              if(siteMap.InvitedFilesAndApps != null)
+              for(let invitedFile of siteMap.InvitedFilesAndApps) {
+                if(invitedFile.app_name != undefined) {
+                  tempOwnedApps[i++] = {
+                                key : invitedFile.app_hash,
+                                value : invitedFile.app_name,
+                                text : invitedFile.app_name
+                              };
+                }
+              }
+              if(siteMap.CreatedFilesAndApps != null)
+              for(let createdFile of siteMap.CreatedFilesAndApps) {
+                if(createdFile.app_name != undefined) {
+                  tempOwnedApps[i++] = {
+                                key : createdFile.app_hash,
+                                value : createdFile.app_name,
+                                text : createdFile.app_name
+                              };
+                }
+              }
+            }
+            this.setState({existingApps : tempOwnedApps});
+    })
+    .catch(error => {
+        console.log('Error in Fetching SiteMap --> ' + error);
+        this.setState({loading:false,open:true});
+    });
 }
 
   mimCheck = (file) => {
@@ -115,18 +112,6 @@ class SenderView extends Component {
     this.setState({uploadedFile : file});
   }
 
-  // mimCheck = (file) => {
-  //     if (file) {
-  //       var reader = new FileReader();
-  //         reader.onload = function(e) { 
-  //           console.log(e.target.result); 
-  //       }
-  //       reader.readAsBinaryString(file);
-  //     } else { 
-  //       alert("Failed to load file");
-  //     }
-  //   }
-
   handleDismiss = () => {
     this.setState({ visible: false });
   }
@@ -140,7 +125,7 @@ class SenderView extends Component {
           this.setState({hashMessage:'Please choose App name',visible:true,alert:'KFS Alert'});
         }
         else {
-              const updateURL = 'http://0.0.0.0:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+              const updateURL = 'http://localhost:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
               '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
               console.log(updateURL);
               axios.get(updateURL)
@@ -161,7 +146,7 @@ class SenderView extends Component {
             }
         }
       else {
-        const url1 = 'http://0.0.0.0:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+        const url1 = 'http://localhost:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
         console.log(url1);
         axios.get(url1)
@@ -196,13 +181,13 @@ class SenderView extends Component {
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
               
-              axios.post('http://0.0.0.0:3000/upload/update', formData)
+              axios.post('http://localhost:3000/upload/update', formData)
               .then( response => {
                 if(response.data === 'false') {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
                 }
                 else {
-                  this.setState({uploading:false,hashMessage:response.data,visible:false})
+                  this.setState({open:false,uploading:false,hashMessage:'File stored successfully with KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
                 }
               })
               .catch(error => {
@@ -217,14 +202,13 @@ class SenderView extends Component {
           data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
           data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
           console.log(data);
-          console.log()
-          axios.post('http://0.0.0.0:3000/upload', data)
+          axios.post('http://localhost:3000/upload', data)
           .then( response => {
             if(response.data === 'false') {
               this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
             }
             else {
-              this.setState({open:false,uploading:false,hashMessage:'File stored successfully! with \n KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
+              this.setState({open:false,uploading:false,hashMessage:'File stored successfully with KFS FILE ID :'+response.data,visible:true,alert:'KFS Alert'})
             }
           })
           .catch(error => {
@@ -233,28 +217,30 @@ class SenderView extends Component {
         }
     }
 
-  saveToBC = async() => {
-    try{
-      if(!this.state.readNWrite) {
-        console.log(this.state.sender);
-        await kfs.methods.createFile(web3.utils.fromUtf8(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
-          from: this.state.sender
-        });
-      }
-      else {
-        console.log(this.state.appNames);
-        console.log(this.state.appNames[this.state.selectApp]+":"+this.state.hashMessage+":"+this.state.receipent);
-        await kfs.methods.updateApp(this.state.appNames[this.state.selectApp],this.state.hashMessage,this.state.receipent).send({
-          from: this.state.sender
-        });
-      }
-      this.setState({open:false,hashMessage:'Your Transaction has been recorderd in Blockchain',visible:true,alert:'KFS Alert'})
-    }catch(e) {
-      console.log(e);
-    }
+  // saveToBC = async() => {
+  //   try{
+  //     if(!this.state.readNWrite) {
+  //       console.log(this.state.sender);
+  //       await kfs.methods.createFile(web3.utils.fromUtf8(this.state.fileName),this.state.hashMessage,this.state.receipent).send({
+  //         from: this.state.sender
+  //       });
+  //     }
+  //     else {
+  //       console.log(this.state.appNames);
+  //       console.log(this.state.appNames[this.state.selectApp]+":"+this.state.hashMessage+":"+this.state.receipent);
+  //       await kfs.methods.updateApp(this.state.appNames[this.state.selectApp],this.state.hashMessage,this.state.receipent).send({
+  //         from: this.state.sender
+  //       });
+  //     }
+  //     this.setState({open:false,hashMessage:'Your Transaction has been recorderd in Blockchain',visible:true,alert:'KFS Alert'})
+  //   }catch(e) {
+  //     console.log(e);
+  //   }
+  // }
+
+  uploadFolder = (event) => {
+    console.log(event.target.value);
   }
-
-
   FolderPrompt = () => {
     return (
       <div>
@@ -266,18 +252,18 @@ class SenderView extends Component {
           checked={this.state.readNWrite} />
             <br /><br />
         {this.state.readNWrite ? 
-          // <Form.Field>
-          //     <Dropdown className="form-control"  placeholder="Select Folder" value={this.state.selectApp}
-          //   onChange={ (e,data) => this.setState({selectApp: data.value})}
-          //   fluid selection options={this.state.existingApps} />
-          // </Form.Field> 
           <Form.Field>
-            <Input style={{ width: "100%" }} 
-            name="appName"
-            value={this.state.selectApp}
-            onChange={event => this.setState({ selectApp: event.target.value})}
-          />
-        </Form.Field>  
+              <Dropdown className="form-control"  placeholder="Select Folder" value={this.state.selectApp}
+                onChange={ (e,data) => this.setState({selectApp: data.value})}
+                fluid selection options={this.state.existingApps} />
+          </Form.Field> 
+        //   <Form.Field>
+        //     <Input style={{ width: "100%" }} 
+        //     name="appName"
+        //     value={this.state.selectApp}
+        //     onChange={event => this.setState({ selectApp: event.target.value})}
+        //   />
+        // </Form.Field>  
           :
           ""
         }
@@ -348,6 +334,12 @@ class SenderView extends Component {
                         onChange={event => this.setState({ base64content: event.target.value})}
                         />
                     </Form.Field>
+                    <Form.Field>
+                    <p>Select The Directory:
+                      <input type="file" webkitdirectory mozdirectory 
+                        onChange={e => this.uploadFolder(e)}/>
+                    </p>
+                    </Form.Field>
                     {this.FolderPrompt()}
                     <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
                   </Form>
@@ -382,33 +374,14 @@ class SenderView extends Component {
           </Grid>
         </header>
         {this.state.uploading ? 
-        <Modal
-          open={this.state.open}
-          onClose={this.close}
-          size="mini"
-        >
-        <Modal.Header>Uploading to KFS ...</Modal.Header>
-        <Modal.Content>
-          <Image src={UploadingGIF} />
-        </Modal.Content>
-      </Modal> :
-      <Modal
-         open={this.state.open}
-         onClose={this.close}
-         size="small"
-       >
-       <Modal.Header>Do you want to Record this transaction in blockchain?</Modal.Header>
-        <Modal.Content>
-          <Input label='KFS FILE ID' placeholder={this.state.hashMessage} disabled/>
-        </Modal.Content>
-        <Modal.Actions>
-          <Button onClick={()=>this.setState({ open: false })} color='red'> No </Button>
-          <Button onClick={()=>{
-            this.saveToBC();
-          }} color='green'>Yes</Button>
-        </Modal.Actions>
-     </Modal>
-    }
+          <div className="modal">
+            <div className="modal-content"> 
+              <center>
+                <span style={{color:'white',fontSize:'24px'}}>Uploading to KFS ...</span>
+                <Image style={{marginTop:'150px'}} height="350" width="400" src={UploadingGIF} />
+                </center>
+            </div>
+        </div> : ""}
       </div>
     );
   }

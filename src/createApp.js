@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Button, Form, Modal, Input, Message, Grid} from 'semantic-ui-react';
 import './App.css';
-import web3 from './ethereum/web3.js';
+import web3 from './web3.js';
 import axios from 'axios';
-import kfs from './ethereum/kfs.js'
+// import kfs from './ethereum/kfs.js'
 
 class ReceiverView extends Component {
 
@@ -27,17 +27,17 @@ class ReceiverView extends Component {
     });
   }
 
-  saveToBC = async() => {
-    console.log(web3.utils.fromUtf8(this.state.appName)+' : '+this.state.appIDHash);
-    try{
-      await kfs.methods.createApp(web3.utils.fromUtf8(this.state.appName.trim()),this.state.appIDHash).send({
-        from: this.state.sender
-      });
-      this.setState({realContent:'AppID :'+this.state.appIDHash+' has been created successfully',open:false,visible:true,alert:'KFS Alert'})
-    }catch(e) {
-      console.log(e);
-    }
-  }
+  // saveToBC = async() => {
+  //   console.log(web3.utils.fromUtf8(this.state.appName)+' : '+this.state.appIDHash);
+  //   try{
+  //     await kfs.methods.createApp(web3.utils.fromUtf8(this.state.appName.trim()),this.state.appIDHash).send({
+  //       from: this.state.sender
+  //     });
+  //     this.setState({realContent:'AppID :'+this.state.appIDHash+' has been created successfully',open:false,visible:true,alert:'KFS Alert'})
+  //   }catch(e) {
+  //     console.log(e);
+  //   }
+  // }
 
 
   close = () => this.setState({ open: false });
@@ -47,7 +47,7 @@ class ReceiverView extends Component {
   }
 
   getAppID = () => {
-    const appIdUrl = 'http://0.0.0.0:3000/createAppID/'+this.state.appName.trim()+'?sender='+window.btoa(this.state.sender.toLowerCase());
+    const appIdUrl = 'http://localhost:3000/createAppID/'+this.state.appName.trim()+'?sender='+window.btoa(this.state.sender.toLowerCase());
     console.log(appIdUrl);    
     let appIDHash = '';
           axios.get(appIdUrl)
