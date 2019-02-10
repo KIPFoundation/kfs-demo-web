@@ -202,7 +202,7 @@ class SenderView extends Component {
           data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
           data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
           console.log(data);
-          axios.post('http://localhost te:3000/upload', data)
+          axios.post('http://localhost:3000/upload', data)
           .then( response => {
             if(response.data === 'false') {
               this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -238,7 +238,9 @@ class SenderView extends Component {
   //   }
   // }
 
-
+  uploadFolder = (event) => {
+    console.log(event.target.value);
+  }
   FolderPrompt = () => {
     return (
       <div>
@@ -332,6 +334,12 @@ class SenderView extends Component {
                         value={this.state.base64content}
                         onChange={event => this.setState({ base64content: event.target.value})}
                         />
+                    </Form.Field>
+                    <Form.Field>
+                    <p>Select The Directory:
+                      <input type="file" webkitdirectory mozdirectory 
+                        onChange={e => this.uploadFolder(e)}/>
+                    </p>
                     </Form.Field>
                     {this.FolderPrompt()}
                     <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
