@@ -1,0 +1,29 @@
+@keyframes flickerAnimation {
+    0%   { opacity:1; }
+    90%  { opacity:0.2; }
+    100%  { opacity:0; }
+  }
+  @-o-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    90%  { opacity:0.2;}
+    100%  { opacity:0; }
+  }
+  @-moz-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    90%  { opacity:0.2;}
+    100%  { opacity:0; }
+  }
+  @-webkit-keyframes flickerAnimation{
+    0%   { opacity:1; }
+    90%  { opacity:0.2;}
+    100%  { opacity:0; }
+  }
+  .animate-copied-message-flicker {
+      color:#a6a6a6;
+      font-weight: bold;
+      font-size:14px;
+     -webkit-animation: flickerAnimation 3s;
+     -moz-animation: flickerAnimation 3s;
+     -o-animation: flickerAnimation 3s;
+      animation: flickerAnimation 3s;
+  }

@@ -1,0 +1,139 @@
+.fileList {
+    cursor:pointer;
+    transition: box-shadow 0.2s ease-in-out;
+}
+.fileList:hover {
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+}
+.file_name_css{
+    display:inline-block;
+    -ms-word-break: break-all;
+    word-break: break-all;
+
+ /* Non standard for webkit */
+     word-break: break-word;
+
+    -webkit-hyphens: auto;
+       -moz-hyphens: auto;
+        -ms-hyphens: auto;
+            hyphens: auto;
+}
+.options-menu :hover {
+    border:1px solid #a6a6a6;
+}
+.normal-search-box {
+    width:70%;
+    margin-top:6%;
+    height:15%;
+    padding-bottom:3%;
+    border-bottom:1px solid #a6a6a6;
+}
+.table_body_scrollable {
+    overflow:auto;
+    padding:0px;
+    margin: 0px;
+    height:80%;
+}
+.content-container {
+    border:0%;
+    padding:1% 5% 10% 10%;
+    background-color:transparent;
+    font-size:16px;
+}
+.stick-t_head {
+    position: sticky !important;
+    top:0;
+    z-index: 2;
+    padding:10px;
+    opacity:10;
+    background-color: #e6e4e4;
+}
+.right_pane {
+    background-color:#e4e4e6;
+    width:20%;
+    padding-top:5%;
+    height:100%;
+}
+.accountOptions {
+    cursor:pointer;
+    margin-left:40%;
+    width:50%;
+    height:10%;
+}
+/* The Modal (background) */
+.modal {
+    /* Hidden by default */
+   position: fixed; /* Stay in place */
+   z-index: 100; /* Sit on top */
+   padding-top: 100px; /* Location of the box */
+   left: 0;
+   top: 0;
+   width: 100%; /* Full width */
+   height: 100%; /* Full height */
+   overflow: auto; /* Enable scroll if needed */
+   background-color: rgba(0, 0, 0,0.9); /* Black w/ opacity */
+ }
+/* Modal Content */
+.modal-content {
+    margin: auto;
+    padding: 10px;
+    width: 60%;
+} 
+/* The Close Button */
+.close {
+    color: #ffffff;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+}
+.close:hover,
+.close:focus {
+    color: #000;
+    text-decoration: none;
+    cursor: pointer;
+}
+.heart-beat-animation {
+    height:35%;
+    width:35%;
+    margin:20% 0% 0% 10%;
+    animation: beat .25s infinite alternate;
+    transform-origin: center;
+}
+
+/* Heart beat animation */
+@keyframes beat {
+    to { transform: scale(1.4); }
+}
+
+@-o-keyframes beat {
+    to { transform: scale(1.4); }
+  }
+@-moz-keyframes beat {
+    to { transform: scale(1.4); }
+}
+
+@-webkit-keyframes beat {
+    to { transform: scale(1.4); }
+}
+
+.folder-active {
+    display:flex;
+    opacity:1;
+}
+.folder-inactive {
+    display:flex;
+    opacity:0.5;
+}
+.folder-inactive:hover {
+    opacity:0.8;
+    cursor:pointer;
+}
+.fake-content {
+    animation: blur 1s infinite;
+}
+.fake-column {
+    margin:2%;
+    height:20px;
+    width:100%;
+    background-color:#cecccc;
+}

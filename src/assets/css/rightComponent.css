@@ -1,0 +1,127 @@
+.file-input-wrapper {
+    width: 100%;
+    height: 0.05%;
+    overflow: hidden;
+    position: relative;
+}
+.file-input-wrapper > input[type="file"] {
+    font-size:200px;
+    position: absolute;
+    cursor:pointer;
+    top: 0;    
+    right: 0;
+    opacity: 0;
+}
+.file-input-wrapper > .btn-file-input {
+    display: inline-block;
+    width: 80%;
+    height: 0.05%;
+    color:#2475f8;
+    background-color:transparent;
+    margin-left:12%;
+    display:flex;
+    padding-left:5%;
+    padding-bottom:2%;
+    margin-bottom:2%;
+    cursor:pointer;
+    border-radius:10px;
+}
+.file-input-wrapper:hover > .btn-file-input {
+    opacity:0.8;
+    border-bottom:1px solid #1169f7;
+}
+.new-shared-folder {
+    width: 80%;
+    height: 0.047%;
+    color:#2475f8;
+    margin-left:12%;
+    margin-bottom:3%;
+    display:flex;
+    cursor:pointer;
+    padding:3% 0% 2% 5%;
+    border-radius:10px;
+}
+
+.new-shared-folder:hover  {
+    opacity:0.7;
+    border-bottom:1px solid #1169f7;
+}
+.new-shared-folder-clicked  {
+    width: 80%;
+    height: 0.047%;
+    color:#2475f8;
+    margin-left:12%;
+    margin-bottom:3%;
+    display:flex;
+    cursor:pointer;
+    padding:3% 0% 2% 5%;
+    border-radius:10px;
+    opacity:0.7;
+    border-bottom:1px solid #1169f7;
+}
+
+.positive-response {
+    color:green;
+    font-size:12px;
+}
+.negative-response  {
+    color:red;
+    font-size:12px;
+}
+
+.dontShow {
+    display:none;
+}
+
+.modal-for-uploading {
+    position: fixed; 
+    z-index: 1; 
+    left: 0;
+    top: 0;
+    width: 100%; 
+    height: 100%; 
+}
+.upload-n-share {
+    background-color:#ffffff;
+    margin-top:16%;
+    width:32%;
+    animation: zoomIn 1s 1;
+    z-index:3;
+    font-size:12px;
+    animation-fill-mode: forwards;
+    border-radius:2%;
+    padding:2%;
+}
+
+@keyframes zoomIn {
+    to { transform: scale(1.4); }
+}
+
+.lesser-brighter {
+    opacity:0.4;
+    pointer-events: none;
+}
+.sharing-bar {
+    width:10%;
+    height:2px;
+    background-color: #a6a6a6;
+    position: absolute;
+    animation: expand 2s infinite;
+}
+@keyframes expand {
+    0% {
+        left:6%;
+        width:25%;
+    }
+    25% {
+        width:50%;
+    }
+    50% {
+        width:10%;
+        right:50%;
+    }
+    100% {
+        width:50%;
+        right:6%;
+    }
+}

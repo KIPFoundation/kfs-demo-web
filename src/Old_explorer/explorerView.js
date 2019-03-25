@@ -61,7 +61,7 @@ class Drive extends React.Component {
     removeFile = () => {
         const b64Sender = window.btoa(this.state.sender.toLowerCase());
         // console.log(this.state.fileToBeDeleted+" : "+this.state.fileHashToBeDeleted+" : "+this.state.openWorkspace);
-        const removeEndpoint = 'http://localhost:3000/Remove?appName='+this.state.openWorkspace+'&senderPub='+b64Sender+'&name='+this.state.fileToBeDeleted+'&hash='+this.state.fileHashToBeDeleted;
+        const removeEndpoint = 'http://204.48.21.88:3000/Remove?appName='+this.state.openWorkspace+'&senderPub='+b64Sender+'&name='+this.state.fileToBeDeleted+'&hash='+this.state.fileHashToBeDeleted;
         console.log(removeEndpoint);
         axios.get(removeEndpoint)
         .then(response => {
@@ -79,7 +79,7 @@ class Drive extends React.Component {
 
 
     fetchSitemap = (appName, senderPub) => {
-        const fetchingSiteMapURL = 'http://localhost:3000/explorer?AppName='+appName+'&senderPub='+senderPub;
+        const fetchingSiteMapURL = 'http://204.48.21.88:3000/explorer?AppName='+appName+'&senderPub='+senderPub;
         console.log(fetchingSiteMapURL);
         axios.get(fetchingSiteMapURL)
         .then( response => {
@@ -104,7 +104,7 @@ class Drive extends React.Component {
         this.setState({openWorkspace:appName,openWorkspaceHash:appHash,readRequest:true});
         const b64OfUser = window.btoa(this.state.sender.toLowerCase());
         // const userHelpingInFetching = benefactor == 'self' ? b64OfUser : benefactor;
-        const url = 'http://localhost:3000/appdata/'+appHash+'?reciPub='+b64OfUser;
+        const url = 'http://204.48.21.88:3000/appdata/'+appHash+'?reciPub='+b64OfUser;
         console.log(url);
         axios.get(url)
         .then( response => {
@@ -147,7 +147,7 @@ class Drive extends React.Component {
         //      b64OfReceipent = receipentAddress == 'self' ? b64OfSender : receipentAddress;
         // }
         
-        const readingUrl = 'http://localhost:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
+        const readingUrl = 'http://204.48.21.88:3000/read/'+fileToBeRead+'?reciPub=' + b64OfReceipent;
         console.log(readingUrl);
         axios.get(readingUrl)
         .then( response => {
@@ -303,7 +303,7 @@ class Drive extends React.Component {
     signUpWithb64 = () => {
         this.setState({loading:true});
         const b64OfSender =  window.btoa(this.state.sender.toLowerCase());
-        const creatingDefaultAppIdUrl = 'http://localhost:3000/createAppID/'+b64OfSender+'?sender='+b64OfSender;
+        const creatingDefaultAppIdUrl = 'http://204.48.21.88:3000/createAppID/'+b64OfSender+'?sender='+b64OfSender;
         console.log(creatingDefaultAppIdUrl);
         axios.get(creatingDefaultAppIdUrl)
         .then( response => {

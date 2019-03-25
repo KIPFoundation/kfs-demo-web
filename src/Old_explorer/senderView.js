@@ -58,7 +58,7 @@ class SenderView extends Component {
     console.log(this.state.sender);
     const b64OfUser = window.btoa(sender.toLowerCase());
     let tempOwnedApps = [];
-    const fetchingSiteMapURL = 'http://localhost:3000/explorer?AppName='+b64OfUser+'&senderPub='+b64OfUser;
+    const fetchingSiteMapURL = 'http://204.48.21.88:3000/explorer?AppName='+b64OfUser+'&senderPub='+b64OfUser;
     console.log(fetchingSiteMapURL);
     axios.get(fetchingSiteMapURL)
     .then( response => {
@@ -70,7 +70,7 @@ class SenderView extends Component {
               let i = 0;
               if(siteMap.InvitedFilesAndApps != null)
               for(let invitedFile of siteMap.InvitedFilesAndApps) {
-                if(invitedFile.app_name != undefined) {
+                if(invitedFile.app_name !== undefined) {
                   tempOwnedApps[i++] = {
                                 key : invitedFile.app_hash,
                                 value : invitedFile.app_name,
@@ -78,7 +78,7 @@ class SenderView extends Component {
                               };
                 }
               }
-              if(siteMap.CreatedFilesAndApps != null)
+              if(siteMap.CreatedFilesAndApps !== null)
               for(let createdFile of siteMap.CreatedFilesAndApps) {
                 if(createdFile.app_name != undefined) {
                   tempOwnedApps[i++] = {
@@ -125,7 +125,7 @@ class SenderView extends Component {
           this.setState({hashMessage:'Please choose App name',visible:true,alert:'KFS Alert'});
         }
         else {
-              const updateURL = 'http://localhost:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+              const updateURL = 'http://204.48.21.88:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
               '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
               console.log(updateURL);
               axios.get(updateURL)
@@ -146,7 +146,7 @@ class SenderView extends Component {
             }
         }
       else {
-        const url1 = 'http://localhost:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+        const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
         console.log(url1);
         axios.get(url1)
@@ -181,7 +181,7 @@ class SenderView extends Component {
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
               
-              axios.post('http://localhost:3000/upload/update', formData)
+              axios.post('http://204.48.21.88:3000/upload/update', formData)
               .then( response => {
                 if(response.data === 'false') {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -202,7 +202,7 @@ class SenderView extends Component {
           data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
           data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
           console.log(data);
-          axios.post('http://localhost:3000/upload', data)
+          axios.post('http://204.48.21.88:3000/upload', data)
           .then( response => {
             if(response.data === 'false') {
               this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -239,7 +239,33 @@ class SenderView extends Component {
   // }
 
   uploadFolder = (event) => {
-    console.log(event.target.value);
+    console.log(event.target.files);
+    // const username = 'sai';
+    // const password = '123';
+    // const basicAuth = 'Basic ' + btoa(username + ':' + password);
+    const formData = new FormData();
+    let sum = 0;
+    const array = Array.from(event.target.files);
+    for(let i=0;i<array.length;i++) {
+      formData.append('multiplefiles',array[i]);
+      sum += array[i].size;
+    }
+    console.log(sum);
+    formData.append('senderPub','MHg5ZjJjOTVjZGM5NjBiNmEyYmI5Zjg4M2I0Nzg2MTliZWFkMWM1N2Vl');
+    formData.append('reciPub','MHgzNzcxNzVmODU4OGY2ZjVmNGRiYTdhZjY1OTI0YWI2OWIwMGE2MGI2');
+    formData.append('appName','Mk4tcl2.4.9.7_$2a$10$0Gx8jewpIMFNkn0R2cppMuLTWsPlSc.EUG565Obtn8DwnwvmEexm_$2a$10$3rd7h3AVqb99e9xOZLWrKul8TbjYShjzd2cChcr3ms6M.j0pEAoC_2019-03-2111_55_35.687504358_0000UTCm=_2004.635095048') 
+    axios.post('http://204.48.21.88:3000/updatefolder',formData, {
+      auth: {
+        username: 'sai',
+        password: '123'
+      }
+    })
+    .then( response => {
+        console.log(response);
+    })
+    .catch(error => {
+      console.log(error);
+    });
   }
   FolderPrompt = () => {
     return (
@@ -293,6 +319,7 @@ class SenderView extends Component {
         text : mime
       };
     });
+
     return (
       <div className="App">
         <header className="App-header">
@@ -334,18 +361,16 @@ class SenderView extends Component {
                         onChange={event => this.setState({ base64content: event.target.value})}
                         />
                     </Form.Field>
-                    <Form.Field>
-                    <p>Select The Directory:
-                      <input type="file" webkitdirectory mozdirectory 
-                        onChange={e => this.uploadFolder(e)}/>
-                    </p>
-                    </Form.Field>
                     {this.FolderPrompt()}
                     <br/><Button loading={this.state.submitButton}  onClick={this.sendRequest} primary>Submit</Button>
                   </Form>
                 :
                 // file upload
-                <Form encType="multipart/form-data" method="post">      
+                <Form encType="multipart/form-data" method="post">  
+                    <Form.Field>
+                      <input directory="" webkitdirectory="" type="file" onChange={(e) => this.uploadFolder(e)} /> 
+                      {/* <input type="file" name="multiplefiles" onChange={(e) => this.uploadFolder(e)} id="multiplefiles" multiple></input> */}
+                    </Form.Field>
                     <Form.Field>
                       <h4>Your address</h4>
                       <Input disabled size="large" name="senderPub" style={{ width: "100%"}}
