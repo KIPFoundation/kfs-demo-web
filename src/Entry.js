@@ -87,21 +87,6 @@ class WebExplorer extends React.Component {
         this.setState({sharing :tempInvitedAppsnFiles, home : tempCreatedAppsnFiles});
     }
 
-    uploadFileToKFS = (file) => {
-        this.setState({isFileUploaded:false});
-        const data = new FormData();
-        data.append('file', file);
-        data.append('senderPub', this.state.loggedInUser);
-        data.append('reciPub', this.state.loggedInUser);
-        axios.post('http://204.48.21.88:3000/upload', data)
-        .then( response => {
-            this.setState({isFileUploaded : true});
-        })
-        .catch(error => {
-            console.log(error);
-        });
-    }
-
     render() {
         return (
             <div className="completePage">
@@ -115,7 +100,8 @@ class WebExplorer extends React.Component {
                                 <Route exact path="/" component={WelcomePage} />
                                 <Route path="/home"
                                     render={() => 
-                                        <ContentView content={this.state.home} />
+                                        <ContentView content={this.state.home} 
+                                            refreshDrive={()=>this.fetchSitemapOfUser()}/>
                                     }/>
                                 <Route path="/sharing" 
                                     render={() => 

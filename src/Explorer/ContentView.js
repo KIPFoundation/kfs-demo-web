@@ -1,12 +1,13 @@
 import React, { Component } from 'react';
-import {Input,Image,Table,Icon,Button,Popup} from 'semantic-ui-react';
+import {Header,Image,Table,Icon,Button,Popup} from 'semantic-ui-react';
 import web3 from '../miscellaneous/web3';
-import KIP_LOGO from '../assets/KIP_LOGO.png';
+import KIP_LOGO from '../assets/logo_without-title.png';
 import '../assets/css/contentView.css';
 import axios from 'axios';
 import RightPaneComponent from './rightPaneComponents';
 import AccountOptions from './accountOptions';
 import Options from './FileOptions';
+import CustomIFrame from './CustomIFrame';
 
 class ContentView extends Component {
   constructor(props) {
@@ -18,6 +19,7 @@ class ContentView extends Component {
       openedFileName:'',
       source:KIP_LOGO,
       pathTraversal:[],
+      fileToBeRead:''
     }
   }
   
@@ -42,15 +44,29 @@ class ContentView extends Component {
     }, 1000);  
   }
   
-  fetchFilesOfFolder = (folderID,folderName) => {
+  fetchFilesOfFolder = (folderAttributes,typeNumber) => {
     this.setState({filesWithJSX:<FakeContent />});
-    const url = 'http://204.48.21.88:3000/appdata/'+folderID+'?reciPub='+this.state.b64OfSender;
-    console.log(url);
-    axios.get(url)
+    let url;
+    if(typeNumber === 2) {
+      url = 'http://204.48.21.88:3000/readfolder/'+folderAttributes.fileID+'?reciPub='+this.state.b64OfSender;
+    }
+    else {
+      url = 'http://204.48.21.88:3000/appdata/'+folderAttributes.fileID+'?reciPub='+this.state.b64OfSender; 
+    }
+    console.log(url)
+    axios({
+      method:'get',
+      url: url,
+      auth: {
+          username: 'sai',
+          password: '123'
+      }
+    })
     .then( response => {
-        const innerFiles = response.data.files;
+        let innerFiles = response.data.files;
+        innerFiles !== null ? innerFiles.map(fileObject => fileObject['is_root_file'] = 'true') : console.log('File is empty');
         let tempPathTraversal = this.state.pathTraversal;
-        tempPathTraversal.push(folderName);
+        tempPathTraversal.push(folderAttributes.smallFN);
         this.setState({filesWithJSX : this.renderFiles(innerFiles) , pathTraversal : tempPathTraversal });
     })
     .catch(error => {
@@ -61,11 +77,11 @@ class ContentView extends Component {
   renderFiles = filesnFolders => {
     console.log(filesnFolders);
     let filesWithJSX = [];
-    if(filesnFolders.length === 0) {
+    if(filesnFolders === null) {
       filesWithJSX.push(
         <React.Fragment>
-          <Table.Row ><Table.Cell style={{padding:'3%'}}/><Table.Cell /><Table.Cell /></Table.Row>
-          <Table.Row><Table.Cell style={{padding:'3%'}}/><Table.Cell /><Table.Cell /></Table.Row>
+          <Table.Row key="fake1"><Table.Cell style={{padding:'3%'}}/><Table.Cell /><Table.Cell /></Table.Row>
+          <Table.Row key="fake2"><Table.Cell style={{padding:'3%'}}/><Table.Cell /><Table.Cell /></Table.Row>
           <Table.Row key={'No Files'}>
               <Table.Cell />
               <Table.Cell style={{padding:'3% 3% 3% 20%'}}>
@@ -79,54 +95,90 @@ class ContentView extends Component {
       )
     }
     else {
-      filesWithJSX = filesnFolders.map(file => {
-        if(file.file_name !== undefined) {
-          const fileName = file.file_name;
-          const indexOfExtension = fileName.lastIndexOf('.');
-          const extension = fileName.substr(indexOfExtension+1,fileName.length);
-          let file_icon;
-          if(extension === 'jpeg' || extension === 'png' || extension === 'gif' || extension === 'jpg') {
-            file_icon = "file image outline";
-          } 
-          else if(extension === 'mp4' || extension === 'quicktime' || extension === 'x-flv' || extension === 'x-msvideo' || extension === 'x-matroska') {
-            file_icon = "file video outline";
+      filesWithJSX = filesnFolders.map((file,index) => {
+        if(file.is_root_file === "true") {
+          if(file.file_name !== undefined) {
+            const fileName = file.file_name;
+            const indexOfExtension = fileName.lastIndexOf('.');
+            const extension = fileName.substr(indexOfExtension+1,fileName.length);
+            let file_icon;
+            if(extension === 'jpeg' || extension === 'png' || extension === 'gif' || extension === 'jpg') {
+              file_icon = "file image outline";
+            } 
+            else if(extension === 'mp4' || extension === 'quicktime' || extension === 'x-flv' || extension === 'x-msvideo' || extension === 'x-matroska') {
+              file_icon = "file video outline";
+            }
+            else if(extension === 'pdf') {
+              file_icon = "file pdf outline"
+            }
+            else 
+              file_icon = "file outline"
+            return (
+                <Table.Row key={file.file_hash} className="fileList">
+                    <Table.Cell>
+                      <Icon  color="blue" name={file_icon} size="large"/>
+                    </Table.Cell>
+                    <Table.Cell onClick={() => 
+                        this.setState({ fetchFileContentAction:true,openedFileName:fileName,fileToBeRead:file.file_hash }) 
+                      }>
+                      <span className="file_name_css">{fileName}</span>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {extension}
+                    </Table.Cell>
+                  <Table.Cell className="options-menu">
+                  <Popup style={{width:'40%'}}
+                    trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
+                    content = {<Options fileAttributes = {file} {...this.state}/>}
+                    on='click'
+                    position='bottom right'
+                  />
+                  </Table.Cell>
+                </Table.Row>
+              )
           }
-          else if(extension === 'pdf') {
-            file_icon = "file pdf outline"
+          else if(file.folder_name !== undefined) {
+            const folderName = file.folder_name;
+            const separatorIndex = folderName.indexOf("_$2a");
+            const actualFolderName = folderName.substring(0,separatorIndex);
+            return (
+                <Table.Row key={file.folder_hash} className="fileList">
+                    <Table.Cell>
+                      <Icon color="blue" name="folder outline" size="big"/>
+                    </Table.Cell>
+                    <Table.Cell onClick={() => this.fetchFilesOfFolder({
+                        fileID : file.folder_hash,
+                        smallFN : actualFolderName,
+                        hugeFN : folderName
+                      },2)}>
+                      <span className="file_name_css">{actualFolderName}</span>
+                    </Table.Cell>
+                    <Table.Cell>
+                      {"folder"}
+                    </Table.Cell>
+                    <Table.Cell className="options-menu">
+                  <Popup style={{width:'40%'}}
+                    trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
+                    content = {<Options fileAttributes = {file} {...this.state}/>}
+                    on='click'
+                    position='bottom right'
+                  />
+                  </Table.Cell>
+                </Table.Row>
+              )
           }
-          else 
-            file_icon = "file outline"
-          return (
-              <Table.Row key={file.file_hash} className="fileList">
-                  <Table.Cell onClick={() => this.fetchContentOfFileAndRender(file.file_hash,fileName)}>
-                    <Icon  color="blue" name={file_icon} size="large"/>
-                  </Table.Cell>
-                  <Table.Cell onClick={() => this.fetchContentOfFileAndRender(file.file_hash,fileName)}>
-                    <span className="file_name_css">{fileName}</span>
-                  </Table.Cell>
-                  <Table.Cell>
-                    {extension}
-                  </Table.Cell>
-                <Table.Cell className="options-menu">
-                <Popup style={{width:'40%'}}
-                  trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
-                  content = {<Options fileAttributes = {file} {...this.state}/>}
-                  on='click'
-                  position='bottom right'
-                />
-                </Table.Cell>
-              </Table.Row>
-            )
-        }
-        else {
-          const folderName = file.app_name;
-          return (
+          else if(file.app_name !== undefined) {
+            return (
               <Table.Row key={file.app_hash} className="fileList">
                   <Table.Cell>
                     <Icon color="blue" name="folder outline" size="big"/>
                   </Table.Cell>
-                  <Table.Cell onClick={() => this.fetchFilesOfFolder(file.app_hash,folderName)}>
-                    <span className="file_name_css">{folderName}</span>
+                  <Table.Cell onClick={() => this.fetchFilesOfFolder({
+                        fileID : file.app_hash,
+                        smallFN : file.app_name,
+                        hugeFN : file.app_name
+                      },1)}>
+                    <span className="file_name_css">{file.app_name}</span>
                   </Table.Cell>
                   <Table.Cell>
                     {"folder"}
@@ -141,59 +193,12 @@ class ContentView extends Component {
                 </Table.Cell>
               </Table.Row>
             )
+          }
         }
       });
     }
     const tableBody = (<Table.Body>{filesWithJSX}</Table.Body>);
     return tableBody;
-  }
-
-  fetchContentOfFileAndRender = (fileToBeRead,fileName) => {
-    this.setState({ fetchFileContentAction:true,openedFileName:fileName });
-    const readingUrl = 'http://204.48.21.88:3000/read/'+fileToBeRead+'?reciPub=' + this.state.b64OfSender;
-      console.log(readingUrl);
-      axios.get(readingUrl)
-      .then( response => {
-        const returnType = response.headers['content-type'];
-        console.log(returnType);
-        if(response.data === false) {
-          console.log('UnAuthorized Attempt');
-        }
-        else {
-          if(returnType === 'image/jpeg' || returnType === 'image/png' || returnType === 'image/gif' || returnType === 'image/jpg') {
-            this.setState({ source:readingUrl });
-          }
-          else if(returnType === 'video/mp4' || returnType === 'video/quicktime' || returnType === 'video/x-flv' || returnType === 'video/x-msvideo' || returnType === 'video/x-matroska') {
-            const link = document.createElement('a');
-            link.href = readingUrl;
-            link.setAttribute('target', "_blank"); 
-            document.body.appendChild(link);
-            link.click();
-            this.setState({fetchFileContentAction : false});
-          }
-          else if(returnType === 'application/pdf') {
-              const link = document.createElement('a');
-              link.href = readingUrl;
-              link.setAttribute('target', "_blank"); 
-              document.body.appendChild(link);
-              link.click();
-              this.setState({fetchFileContentAction : false});
-          }
-          else {
-              const url = window.URL.createObjectURL(new Blob([response.data]));
-              const link = document.createElement('a');
-              link.href = url;
-              link.setAttribute('download', fileName); //or any other extension
-              document.body.appendChild(link);
-              link.click();
-              this.setState({fetchFileContentAction : false});
-          }
-        }
-      })
-      .catch((error) => {
-          this.setState({errorWhileFetching:'Error while fetching file content, this may be because you might deleted it',source:''});
-        console.log(error);
-    });
   }
 
   render() {
@@ -205,11 +210,11 @@ class ContentView extends Component {
               <div style={{padding:'6% 5% 2% 10%',width:'100%'}}>
                 <PathTraversal 
                   path={this.state.pathTraversal} 
-                  homeCall = {() => this.keepDelayInrender()} />
+                  homeCall = {() => this.props.refreshDrive()} />
               </div>
-              <div className="normal-search-box">
+              {/* <div className="normal-search-box">
                   <Input style={{ width: "100%"}} iconPosition = "left" icon='search' placeholder='Search by Mutlihash' transparent/>
-              </div>
+              </div> */}
             </div> 
             <div style={{width:'100%'}} className="table_body_scrollable">
               <Table basic="very" compact padded className="content-container">
@@ -237,25 +242,29 @@ class ContentView extends Component {
                 <AccountOptions />
             </div>
             <RightPaneComponent 
-                uploadFileHandler={(file) => this.uploadFileToKFS(file)}
-                refreshDrive = {() => this.fetchSitemapOfUser()}
-                user = {this.state.loggedInUser}
-                foldersOwned = {this.state.existingApps}
+                refreshDrive = {() => this.props.refreshDrive()}
             />
           </div>
         </div>
         {this.state.fetchFileContentAction? 
           <div className="modal">
               <div className="modal-content">
-                  <span style={{color:'white',fontSize:'24px'}}>{this.state.openedFileName}</span>
+                <Header color="teal" as='h2'>
+                  <Icon.Group size='large'>
+                    <Icon name='file' />
+                    <Icon color="blue" corner name='eye' />
+                  </Icon.Group>
+                   <span style={{marginLeft:'2%'}}>{this.state.openedFileName}</span>
                   <span onClick={() => this.setState({fetchFileContentAction:false,source:KIP_LOGO})} className="close">&times;</span>
-                  {this.state.source ===  KIP_LOGO? 
-                      <center>
-                          <LoadingComponent />
-                      </center> :
-                      <center>
-                          <Image height="75%" width="75%" style={{marginTop :'5%'}} src={ this.state.source } />
-                      </center>
+                </Header>
+                  {this.state.fileToBeRead !==  '' ? 
+                    <center style={{marginTop:'10%',marginLeft:'25%',width:'60%',height:'60%'}} >
+                        <CustomIFrame kfsFileID={this.state.fileToBeRead} 
+                          user = {this.state.b64OfSender} 
+                          fileName = {this.state.openedFileName}
+                        />
+                    </center>
+                    : ''}
                   }
               </div>
           </div>
@@ -266,18 +275,6 @@ class ContentView extends Component {
 }
 
 export default ContentView;
-
-class LoadingComponent extends Component {
-  render() {
-    return (
-      <div className="heart-beat-animation">
-          <center>
-            <Image height="40%" width="40%" style={{marginTop : '100px'}} src={ KIP_LOGO } />
-          </center>
-      </div>
-    );
-  }
-}
 
 class PathTraversal extends Component {
   render() {

@@ -1,9 +1,9 @@
 import React, { Component } from 'react';
 import { Button, Form, Input, Message, Grid ,Image, TextArea, Radio ,Modal, Dropdown} from 'semantic-ui-react';
 // import logo from './logo.svg';
-import './App.css';
-import UploadingGIF from './uploading_image.gif'
-import web3 from './web3.js';
+// import './App.css';
+// import UploadingGIF from './uploading_image.gif'
+// import web3 from './web3.js';
 import axios from 'axios';
 // import kfs from './ethereum/kfs.js'
 class SenderView extends Component {
@@ -33,11 +33,11 @@ class SenderView extends Component {
       open:true
     }
   }
-  async componentDidMount(){
-    web3.eth.getAccounts().then((accounts, err) => {
-        this.setState({sender: accounts[0]});   
-         this.fetchSitemap(accounts[0]);
-    });
+  // async componentDidMount(){
+  //   web3.eth.getAccounts().then((accounts, err) => {
+  //       this.setState({sender: accounts[0]});   
+  //        this.fetchSitemap(accounts[0]);
+  //   });
     // let tempReceipents = [];
     // const receipents = ['0x8c059e23890ad6e2A423FB5235956e17C7C92d7f','0xD14dc708F6CAb1dF5461F893EB46372db2b54CD8',
     // '0x4887BE9f52EfE77F1582107576153DD33071689c','0x9F2C95cDC960b6A2bb9f883b478619bead1c57eE','0x664f3AAE10020BCc201CaaCE4394A93191E487f3',
@@ -52,7 +52,7 @@ class SenderView extends Component {
     //     };
     //   }
     //   this.setState({existingReceipents : tempReceipents});
-  }
+  // }
 
   fetchSitemap = (sender) => {
     console.log(this.state.sender);
@@ -240,9 +240,6 @@ class SenderView extends Component {
 
   uploadFolder = (event) => {
     console.log(event.target.files);
-    // const username = 'sai';
-    // const password = '123';
-    // const basicAuth = 'Basic ' + btoa(username + ':' + password);
     const formData = new FormData();
     let sum = 0;
     const array = Array.from(event.target.files);
@@ -251,10 +248,10 @@ class SenderView extends Component {
       sum += array[i].size;
     }
     console.log(sum);
-    formData.append('senderPub','MHg5ZjJjOTVjZGM5NjBiNmEyYmI5Zjg4M2I0Nzg2MTliZWFkMWM1N2Vl');
-    formData.append('reciPub','MHgzNzcxNzVmODU4OGY2ZjVmNGRiYTdhZjY1OTI0YWI2OWIwMGE2MGI2');
-    formData.append('appName','Mk4tcl2.4.9.7_$2a$10$0Gx8jewpIMFNkn0R2cppMuLTWsPlSc.EUG565Obtn8DwnwvmEexm_$2a$10$3rd7h3AVqb99e9xOZLWrKul8TbjYShjzd2cChcr3ms6M.j0pEAoC_2019-03-2111_55_35.687504358_0000UTCm=_2004.635095048') 
-    axios.post('http://204.48.21.88:3000/updatefolder',formData, {
+    formData.append('senderPub','MHg4YzA1OWUyMzg5MGFkNmUyYTQyM2ZiNTIzNTk1NmUxN2M3YzkyZDdm');
+    formData.append('reciPub','MHg4YzA1OWUyMzg5MGFkNmUyYTQyM2ZiNTIzNTk1NmUxN2M3YzkyZDdm');
+    // formData.append('appName','041-31481_$2a$10$fCXkteEOAHpbuhTXTXCIK.OuQYMu1iRLPlhI7dTMUOpVn6GzKH5Cq_$2a$10$U6gb8BYktDne7rSTBjKkuIQ4EoG6owm6LvwdjZVTCnsh1.hyLTG_2019-03-2708_01_53.575709959_0000UTCm=_3148.490210811') 
+    axios.post('http://204.48.21.88:3000/uploadfolder',formData, {
       auth: {
         username: 'sai',
         password: '123'
@@ -398,7 +395,7 @@ class SenderView extends Component {
             </Grid.Row>
           </Grid>
         </header>
-        {this.state.uploading ? 
+        {/* {this.state.uploading ? 
           <div className="modal">
             <div className="modal-content"> 
               <center>
@@ -406,7 +403,7 @@ class SenderView extends Component {
                 <Image style={{marginTop:'150px'}} height="350" width="400" src={UploadingGIF} />
                 </center>
             </div>
-        </div> : ""}
+        </div> : ""} */}
       </div>
     );
   }

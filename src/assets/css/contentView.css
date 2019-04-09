@@ -29,16 +29,19 @@
     border-bottom:1px solid #a6a6a6;
 }
 .table_body_scrollable {
-    overflow:auto;
+    /* overflow:auto; */
     padding:0px;
     margin: 0px;
-    height:80%;
+    /* height:80%; */
 }
 .content-container {
     border:0%;
-    padding:1% 5% 10% 10%;
+    padding:0% 5% 10% 10%;
     background-color:transparent;
     font-size:16px;
+    display: block;
+    height:80vh;
+    overflow-y: scroll;
 }
 .stick-t_head {
     position: sticky !important;
@@ -75,9 +78,8 @@
  }
 /* Modal Content */
 .modal-content {
-    margin: auto;
-    padding: 10px;
-    width: 60%;
+    padding:1% 10% 2% 5%;
+    width: 100%;
 } 
 /* The Close Button */
 .close {

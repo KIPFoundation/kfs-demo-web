@@ -104,3 +104,51 @@ class Dashboard extends Component {
 }
 
 export default Dashboard;
+
+// fetchContentOfFileAndRender = (fileToBeRead,fileName) => {
+//     this.setState({ fetchFileContentAction:true,openedFileName:fileName });
+//     const readingUrl = 'http://204.48.21.88:3000/read/'+fileToBeRead+'?reciPub=' + this.state.b64OfSender;
+//       console.log(readingUrl);
+//       axios.get(readingUrl)
+//       .then( response => {
+//         const returnType = response.headers['content-type'];
+//         console.log(returnType);
+//         if(response.data === false) {
+//           console.log('UnAuthorized Attempt');
+//         }
+//         else {
+//           if(returnType === 'image/jpeg' || returnType === 'image/png' || returnType === 'image/gif' || returnType === 'image/jpg') {
+//             this.setState({ source:readingUrl });
+//           }
+//           else if(returnType === 'video/mp4' || returnType === 'video/quicktime' || returnType === 'video/x-flv' || returnType === 'video/x-msvideo' || returnType === 'video/x-matroska') {
+//             const link = document.createElement('a');
+//             link.href = readingUrl;
+//             link.setAttribute('target', "_blank"); 
+//             document.body.appendChild(link);
+//             link.click();
+//             this.setState({fetchFileContentAction : false});
+//           }
+//           else if(returnType === 'application/pdf') {
+//               const link = document.createElement('a');
+//               link.href = readingUrl;
+//               link.setAttribute('target', "_blank"); 
+//               document.body.appendChild(link);
+//               link.click();
+//               this.setState({fetchFileContentAction : false});
+//           }
+//           else {
+//               const url = window.URL.createObjectURL(new Blob([response.data]));
+//               const link = document.createElement('a');
+//               link.href = url;
+//               link.setAttribute('download', fileName); //or any other extension
+//               document.body.appendChild(link);
+//               link.click();
+//               this.setState({fetchFileContentAction : false});
+//           }
+//         }
+//       })
+//       .catch((error) => {
+//           this.setState({errorWhileFetching:'Error while fetching file content, this may be because you might deleted it',source:''});
+//         console.log(error);
+//     });
+//   }
