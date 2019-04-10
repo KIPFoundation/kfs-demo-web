@@ -33,6 +33,9 @@
     padding:0px;
     margin: 0px;
     /* height:80%; */
+    /* -webkit-box-shadow:0px 1px 1px #615f5f;
+    -moz-box-shadow:0px 1px 1px #615f5f;
+    box-shadow:0px 1px 1px #615f5f; */
 }
 .content-container {
     border:0%;
@@ -138,4 +141,22 @@
     height:20px;
     width:100%;
     background-color:#cecccc;
+}
+@keyframes blur {
+    0% {
+        opacity:0.2;
+    }
+    50% {
+        opacity:0.8;
+    }
+    100% {
+        opacity:0.2;
+    }
+}
+.dropper_item {
+    cursor:pointer;
+}
+.dropper_item:hover {
+    opacity:0.6;
+    cursor:pointer;
 }

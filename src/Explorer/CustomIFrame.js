@@ -6,7 +6,8 @@ class CustomIFrame extends React.Component {
     state = {
         url:'',
         fetchingContent:true,
-        isMediaFile:false
+        isMediaFile:false,
+        errorInFetching:false
     }
     componentDidMount() {
         const url = 'http://204.48.21.88:3000/read/'+this.props.kfsFileID+'?reciPub='+this.props.user;
@@ -44,13 +45,9 @@ class CustomIFrame extends React.Component {
                 url : window.URL.createObjectURL(new Blob([response.data])),
                 fetchingContent:false,
             });
-            //   const link = document.createElement('a');
-            //   link.href = url;
-            //   link.setAttribute('target', "_blank"); 
-            //   document.body.appendChild(link);
-            //   link.click();
         })
         .catch(error => {
+            this.setState({fetchingContent:false , errorInFetching : true});
             console.log(error);
         });   
     }
@@ -60,12 +57,7 @@ class CustomIFrame extends React.Component {
             overflow: 'hidden',
             paddingTop: '56.25%',
             backgroundColor:'#fbfbfb'
-        }     
-        // const iframe_container = {
-        //     position: 'relative',
-        //     overflow: 'hidden',
-        //     paddingTop: '56.25%',
-        // }    
+        }        
         const iframe_content = {
             position: 'absolute',
             top: '0',
@@ -83,11 +75,16 @@ class CustomIFrame extends React.Component {
                       
                 <div style={iframe_container_with_bg}>
                     <center>
-                        <iframe 
-                            title={this.props.fileName}
-                            style={iframe_content} 
-                            src={this.state.url} 
-                            gesture="media"  allow="encrypted-media" allowFullScreen={true}></iframe>
+                        {!this.state.errorInFetching ? 
+                            <iframe 
+                                title={this.props.fileName}
+                                style={iframe_content} 
+                                src={this.state.url} 
+                                gesture="media"  allow="encrypted-media" allowFullScreen={true}>
+                            </iframe> 
+                            :
+                            <h3 style={{color:'red'}}>Error while fetching the file</h3>
+                        }
                     </center>
                 </div>
             }

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import {Header,Image,Table,Icon,Button,Popup} from 'semantic-ui-react';
+import {Header,Table,Icon,Button,Popup} from 'semantic-ui-react';
 import web3 from '../miscellaneous/web3';
 import KIP_LOGO from '../assets/logo_without-title.png';
 import '../assets/css/contentView.css';
@@ -19,7 +19,8 @@ class ContentView extends Component {
       openedFileName:'',
       source:KIP_LOGO,
       pathTraversal:[],
-      fileToBeRead:''
+      fileToBeRead:'',
+      currentFolderProperties:{}
     }
   }
   
@@ -40,20 +41,31 @@ class ContentView extends Component {
   keepDelayInrender = () => {
     this.setState({filesWithJSX:<FakeContent />})
     setTimeout(() => {
-      this.setState({pathTraversal:['KFS Drive'],filesWithJSX : this.renderFiles(this.props.content) });
+      this.setState({
+        pathTraversal:[{name : 'KFS Drive',kfsName:'none'}],
+        currentFolderProperties : {name : 'explorer'},
+        filesWithJSX : this.renderFiles(this.props.content) });
     }, 1000);  
   }
   
-  fetchFilesOfFolder = (folderAttributes,typeNumber) => {
+  fetchFilesOfFolder = (folderAttributes,pathRequest) => {
+    /* slicing path if path requests */
+    if(pathRequest) {
+      let path = this.state.pathTraversal;
+      const slicerIndex = path.indexOf(folderAttributes);
+      path = path.slice(0,slicerIndex+1);
+      this.setState({pathTraversal : path});
+    }
+    /* end */
     this.setState({filesWithJSX:<FakeContent />});
+    let typeNumber = folderAttributes.type;
     let url;
     if(typeNumber === 2) {
-      url = 'http://204.48.21.88:3000/readfolder/'+folderAttributes.fileID+'?reciPub='+this.state.b64OfSender;
+      url = 'http://204.48.21.88:3000/readfolder/'+folderAttributes.kfsID+'?reciPub='+this.state.b64OfSender;
     }
     else {
-      url = 'http://204.48.21.88:3000/appdata/'+folderAttributes.fileID+'?reciPub='+this.state.b64OfSender; 
+      url = 'http://204.48.21.88:3000/appdata/'+folderAttributes.kfsID+'?reciPub='+this.state.b64OfSender; 
     }
-    console.log(url)
     axios({
       method:'get',
       url: url,
@@ -64,18 +76,18 @@ class ContentView extends Component {
     })
     .then( response => {
         let innerFiles = response.data.files;
-        innerFiles !== null ? innerFiles.map(fileObject => fileObject['is_root_file'] = 'true') : console.log('File is empty');
+        innerFiles !== null ? innerFiles.map(fileObject => fileObject['is_root_file'] = 'true') : console.log('Folder is empty');
         let tempPathTraversal = this.state.pathTraversal;
-        tempPathTraversal.push(folderAttributes.smallFN);
-        this.setState({filesWithJSX : this.renderFiles(innerFiles) , pathTraversal : tempPathTraversal });
+        if(!pathRequest) tempPathTraversal.push(folderAttributes);
+        this.setState({filesWithJSX : this.renderFiles(innerFiles) , currentFolderProperties : folderAttributes , pathTraversal : tempPathTraversal });
     })
     .catch(error => {
+        console.log(url)
         console.log(error);
     });      
   }
 
   renderFiles = filesnFolders => {
-    console.log(filesnFolders);
     let filesWithJSX = [];
     if(filesnFolders === null) {
       filesWithJSX.push(
@@ -111,8 +123,15 @@ class ContentView extends Component {
             else if(extension === 'pdf') {
               file_icon = "file pdf outline"
             }
-            else 
-              file_icon = "file outline"
+            else if(extension === 'js' || extension === 'html' || extension === 'go') {
+              file_icon = 'file code outline'
+            }
+            else if(extension === 'txt' || extension === 'md' || extension === 'json') {
+              file_icon = 'file text'
+            }
+            else {
+              file_icon = "file alternate outline"
+            }
             return (
                 <Table.Row key={file.file_hash} className="fileList">
                     <Table.Cell>
@@ -129,7 +148,12 @@ class ContentView extends Component {
                   <Table.Cell className="options-menu">
                   <Popup style={{width:'40%'}}
                     trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
-                    content = {<Options fileAttributes = {file} {...this.state}/>}
+                    content = {<Options 
+                        fileAttributes = {file} 
+                        parentProperties={this.state.currentFolderProperties}
+                        user = {this.state.b64OfSender}
+                      />
+                    }
                     on='click'
                     position='bottom right'
                   />
@@ -140,17 +164,18 @@ class ContentView extends Component {
           else if(file.folder_name !== undefined) {
             const folderName = file.folder_name;
             const separatorIndex = folderName.indexOf("_$2a");
-            const actualFolderName = folderName.substring(0,separatorIndex);
+            const actualFolderName = separatorIndex === -1 ? folderName : folderName.substring(0,separatorIndex);
             return (
                 <Table.Row key={file.folder_hash} className="fileList">
                     <Table.Cell>
                       <Icon color="blue" name="folder outline" size="big"/>
                     </Table.Cell>
                     <Table.Cell onClick={() => this.fetchFilesOfFolder({
-                        fileID : file.folder_hash,
-                        smallFN : actualFolderName,
-                        hugeFN : folderName
-                      },2)}>
+                        name : actualFolderName,
+                        kfsName : file.folder_name,
+                        kfsID : file.folder_hash,
+                        type:2
+                      },false)}>
                       <span className="file_name_css">{actualFolderName}</span>
                     </Table.Cell>
                     <Table.Cell>
@@ -159,7 +184,12 @@ class ContentView extends Component {
                     <Table.Cell className="options-menu">
                   <Popup style={{width:'40%'}}
                     trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
-                    content = {<Options fileAttributes = {file} {...this.state}/>}
+                    content = {<Options 
+                        fileAttributes = {file} 
+                        parentProperties={this.state.currentFolderProperties}
+                        user = {this.state.b64OfSender}
+                      />
+                    }
                     on='click'
                     position='bottom right'
                   />
@@ -168,17 +198,21 @@ class ContentView extends Component {
               )
           }
           else if(file.app_name !== undefined) {
+            const folderName = file.app_name;
+            const separatorIndex = folderName.indexOf("_$2a");
+            const actualFolderName = separatorIndex === -1 ? folderName : folderName.substring(0,separatorIndex);
             return (
               <Table.Row key={file.app_hash} className="fileList">
                   <Table.Cell>
                     <Icon color="blue" name="folder outline" size="big"/>
                   </Table.Cell>
                   <Table.Cell onClick={() => this.fetchFilesOfFolder({
-                        fileID : file.app_hash,
-                        smallFN : file.app_name,
-                        hugeFN : file.app_name
-                      },1)}>
-                    <span className="file_name_css">{file.app_name}</span>
+                        name : actualFolderName,
+                        kfsName : file.app_name,
+                        kfsID : file.app_hash,
+                        type:1
+                      },false)}>
+                    <span className="file_name_css">{actualFolderName}</span>
                   </Table.Cell>
                   <Table.Cell>
                     {"folder"}
@@ -186,7 +220,12 @@ class ContentView extends Component {
                   <Table.Cell className="options-menu">
                 <Popup style={{width:'40%'}}
                   trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
-                  content = {<Options fileAttributes = {file} {...this.state}/>}
+                  content = {<Options 
+                      fileAttributes = {file} 
+                      parentProperties={this.state.currentFolderProperties}
+                      user = {this.state.b64OfSender}
+                    />
+                  }
                   on='click'
                   position='bottom right'
                 />
@@ -210,7 +249,8 @@ class ContentView extends Component {
               <div style={{padding:'6% 5% 2% 10%',width:'100%'}}>
                 <PathTraversal 
                   path={this.state.pathTraversal} 
-                  homeCall = {() => this.props.refreshDrive()} />
+                  homeCall = {() => this.props.refreshDrive()} 
+                  renderFolderFromPath = {(folderAttributes) => this.fetchFilesOfFolder(folderAttributes,true)} />
               </div>
               {/* <div className="normal-search-box">
                   <Input style={{ width: "100%"}} iconPosition = "left" icon='search' placeholder='Search by Mutlihash' transparent/>
@@ -243,6 +283,8 @@ class ContentView extends Component {
             </div>
             <RightPaneComponent 
                 refreshDrive = {() => this.props.refreshDrive()}
+                pwdAttributes = {this.state.currentFolderProperties}
+                refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
             />
           </div>
         </div>
@@ -279,20 +321,79 @@ export default ContentView;
 class PathTraversal extends Component {
   render() {
     const tail = this.props.path.length-1;
+    let pathTraversal = this.props.path;
+    let carryingFolders = [];
+    let bigPathTraversal = [];
+    if(pathTraversal.length >= 4) {
+      for(let i = 0;i<pathTraversal.length;i++) {
+        if(i === 0) {
+          bigPathTraversal[0] = (
+            <div key={'0'} className="folder-inactive">
+              <div style={{fontSize:'24px'}} onClick={() => this.props.homeCall()}>
+                {pathTraversal[i].name}
+              </div>
+              <Icon style={{marginTop:'2%'}} size="large" name="caret right" />
+            </div>
+          )
+          bigPathTraversal[1] = (
+            <React.Fragment key="pop-up">
+              <Popup
+                trigger={<Button content="..." 
+                  style={{fontSize:'36px',color:'#a6a6a6',marginTop:'-3%',padding:'0px',backgroundColor:'transparent'}} />
+                }
+                content={<Table basic style={{width:'30%',border:'0'}}>
+                  <Table.Body>
+                    {carryingFolders}
+                  </Table.Body>
+                </Table>}
+                on='click'
+                position='bottom center'
+              />
+              <Icon style={{marginTop:'0.45%'}} size="large" name="caret right" />
+            </React.Fragment>
+          )
+        }
+        else if(i === tail) {
+          bigPathTraversal[2] = (
+            <div key={i} className="folder-active">
+              <div style={{fontSize:'24px'}} 
+                  onClick={() => this.props.renderFolderFromPath(pathTraversal[tail],pathTraversal[tail].type) }>
+                {pathTraversal[tail].name}
+              </div>
+            </div>
+          )
+        }
+        else {
+          carryingFolders.push(
+            <Table.Row key={pathTraversal[i].kfsID}
+                className="dropper_item"
+                onClick={()=> this.props.renderFolderFromPath(pathTraversal[i],pathTraversal[i].type)}>
+              <Table.Cell style={{width:'10%',paddingRight:'0px'}}><Icon size="big" color="blue" name="folder" /></Table.Cell>
+              <Table.Cell style={{width:'80%',fontSize:'16px'}}>{pathTraversal[i].name}</Table.Cell>
+            </Table.Row>)
+        }
+      }
+    }
     return (
       <div style={{display:'flex'}}>
-      { this.props.path.map((folder,index) => {
-        return ( 
-            <div key={index} className={tail === index ? "folder-active" : "folder-inactive"}>
-              <div style={{fontSize:'24px'}} onClick={() => {
-                if(index === 0) {
-                  this.props.homeCall()
-                }
-              }}>{folder}</div>
-              {tail !== index ? <Icon style={{marginTop:'2%'}} size="large" name="caret right" /> : ''}
-            </div>
-        )
-      }) }
+      {pathTraversal.length < 4 ? 
+        pathTraversal.map((folder,index) => {
+          return ( 
+              <div key={index} className={tail === index ? "folder-active" : "folder-inactive"}>
+                <div style={{fontSize:'24px'}} onClick={() => {
+                  if(index === 0) {
+                    this.props.homeCall()
+                  }
+                  else {
+                    this.props.renderFolderFromPath(folder,folder.type)
+                  }
+                }}>{folder.name}</div>
+                {tail !== index ? <Icon style={{marginTop:'2%'}} size="large" name="caret right" /> : ''}
+              </div>
+          )
+        }) : 
+        bigPathTraversal
+      }
       </div>
     )
   }

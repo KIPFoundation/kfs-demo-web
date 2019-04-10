@@ -29,7 +29,6 @@ class WebExplorer extends React.Component {
     fetchSitemapOfUser = () => {
         const userExplorerName = this.state.loggedInUser;
         const fetchingSiteMapURL = 'http://204.48.21.88:3000/explorer?AppName='+userExplorerName+'&senderPub='+userExplorerName;
-        console.log(fetchingSiteMapURL);
         axios({
             method:'get',
             url: fetchingSiteMapURL,
@@ -105,7 +104,8 @@ class WebExplorer extends React.Component {
                                     }/>
                                 <Route path="/sharing" 
                                     render={() => 
-                                        <ContentView content={this.state.sharing} />
+                                        <ContentView content={this.state.sharing}
+                                            refreshDrive={()=>this.fetchSitemapOfUser()}/>
                                     }/> 
                                 {/* <Route path="/aboutUs" component={WelcomePage} /> */}
                             </Switch>   
