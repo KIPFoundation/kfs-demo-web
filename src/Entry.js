@@ -28,13 +28,13 @@ class WebExplorer extends React.Component {
 
     fetchSitemapOfUser = () => {
         const userExplorerName = this.state.loggedInUser;
-        const fetchingSiteMapURL = 'http://204.48.21.88:3000/explorer?AppName='+userExplorerName+'&senderPub='+userExplorerName;
+        const fetchingSiteMapURL = 'http://35.200.183.53:3000/explorer?AppName='+userExplorerName+'&senderPub='+userExplorerName;
         axios({
             method:'get',
             url: fetchingSiteMapURL,
             auth: {
-                username: 'sai',
-                password: '123'
+                username : 'qwerty',
+                password: '123456'
             }
         })
         .then( response => {

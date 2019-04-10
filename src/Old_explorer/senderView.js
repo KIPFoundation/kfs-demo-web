@@ -58,7 +58,7 @@ class SenderView extends Component {
     console.log(this.state.sender);
     const b64OfUser = window.btoa(sender.toLowerCase());
     let tempOwnedApps = [];
-    const fetchingSiteMapURL = 'http://204.48.21.88:3000/explorer?AppName='+b64OfUser+'&senderPub='+b64OfUser;
+    const fetchingSiteMapURL = 'http://35.200.183.53:3000/explorer?AppName='+b64OfUser+'&senderPub='+b64OfUser;
     console.log(fetchingSiteMapURL);
     axios.get(fetchingSiteMapURL)
     .then( response => {
@@ -125,7 +125,7 @@ class SenderView extends Component {
           this.setState({hashMessage:'Please choose App name',visible:true,alert:'KFS Alert'});
         }
         else {
-              const updateURL = 'http://204.48.21.88:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+              const updateURL = 'http://35.200.183.53:3000/update?appID='+this.state.selectApp+'&mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
               '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
               console.log(updateURL);
               axios.get(updateURL)
@@ -146,7 +146,7 @@ class SenderView extends Component {
             }
         }
       else {
-        const url1 = 'http://204.48.21.88:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
+        const url1 = 'http://35.200.183.53:3000/create?mime='+this.state.mimeType+'&content=base64,'+this.state.base64content+
         '&senderPub='+window.btoa(this.state.sender.toLowerCase())+'&reciPub='+window.btoa(this.state.receipent.toLowerCase());
         console.log(url1);
         axios.get(url1)
@@ -181,7 +181,7 @@ class SenderView extends Component {
               formData.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
               formData.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
               
-              axios.post('http://204.48.21.88:3000/upload/update', formData)
+              axios.post('http://35.200.183.53:3000/upload/update', formData)
               .then( response => {
                 if(response.data === 'false') {
                   this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -202,7 +202,7 @@ class SenderView extends Component {
           data.append('senderPub', window.btoa(this.state.sender.toLowerCase()));
           data.append('reciPub', window.btoa(this.state.receipent.toLowerCase()));
           console.log(data);
-          axios.post('http://204.48.21.88:3000/upload', data)
+          axios.post('http://35.200.183.53:3000/upload', data)
           .then( response => {
             if(response.data === 'false') {
               this.setState({hashMessage:'UnAuthorized Attempt',visible:true,alert:'KFS Alert'})
@@ -251,10 +251,10 @@ class SenderView extends Component {
     formData.append('senderPub','MHg4YzA1OWUyMzg5MGFkNmUyYTQyM2ZiNTIzNTk1NmUxN2M3YzkyZDdm');
     formData.append('reciPub','MHg4YzA1OWUyMzg5MGFkNmUyYTQyM2ZiNTIzNTk1NmUxN2M3YzkyZDdm');
     // formData.append('appName','041-31481_$2a$10$fCXkteEOAHpbuhTXTXCIK.OuQYMu1iRLPlhI7dTMUOpVn6GzKH5Cq_$2a$10$U6gb8BYktDne7rSTBjKkuIQ4EoG6owm6LvwdjZVTCnsh1.hyLTG_2019-03-2708_01_53.575709959_0000UTCm=_3148.490210811') 
-    axios.post('http://204.48.21.88:3000/uploadfolder',formData, {
+    axios.post('http://35.200.183.53:3000/uploadfolder',formData, {
       auth: {
-        username: 'sai',
-        password: '123'
+        username : 'qwerty',
+        password: '123456'
       }
     })
     .then( response => {

@@ -10,15 +10,15 @@ class CustomIFrame extends React.Component {
         errorInFetching:false
     }
     componentDidMount() {
-        const url = 'http://204.48.21.88:3000/read/'+this.props.kfsFileID+'?reciPub='+this.props.user;
+        const url = 'http://35.200.183.53:3000/read/'+this.props.kfsFileID+'?reciPub='+this.props.user;
         console.log(url);
         axios({
             method:'get',
             url: url,
             responseType:'blob',
             auth: {
-                username: 'sai',
-                password: '123'
+                username : 'qwerty',
+                password: '123456'
             }
         })
         .then( response => {

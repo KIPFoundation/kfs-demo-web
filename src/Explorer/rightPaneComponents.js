@@ -29,13 +29,6 @@ class RightPaneComponent extends React.Component {
         account = account[0].toLowerCase();
         this.setState({ loggedInUser:window.btoa(account)});
     }
-
-    componentWillReceiveProps(newProps) {
-        // Loading new data when the content property changes.
-        if(this.currentDirectory !== newProps.pwdAttributes.name) {
-            this.setState({currentDirectory : newProps.pwdAttributes.name});
-        }
-    }
     
     createSharedFolderAction = () => {
         if(this.state.buttonAcknowledgement === 'Done') {
@@ -43,18 +36,24 @@ class RightPaneComponent extends React.Component {
             this.props.refreshDrive({});
         }
         this.setState({creatingFolder:true});
-        const appIdUrl = 'http://204.48.21.88:3000/createAppID/'+this.state.folderName.trim()+'?sender='+this.state.loggedInUser;
+        const appIdUrl = 'http://35.200.183.53:3000/createAppID/'+this.state.folderName.trim()+'?sender='+this.state.loggedInUser;
         console.log(appIdUrl);    
         axios({
             method:'get',
             url: appIdUrl,
             auth: {
-                username: 'sai',
-                password: '123'
+                username : 'qwerty',
+                password: '123456'
             }
         })
         .then( response => {
-            this.setState({creatingFolder:false,buttonAcknowledgement:'Done',responseInCreatingFolder:'Folder with name '+this.state.folderName+' created successfully'});
+            console.log(response.data);
+            if(response.data === 'An app already exist by this name') {
+                this.setState({creatingFolder:false,buttonAcknowledgement:'Done',responseInCreatingFolder:'Folder with name '+this.state.folderName+' already exists'});
+            }
+            else {
+                this.setState({creatingFolder:false,buttonAcknowledgement:'Done',responseInCreatingFolder:'Folder with name '+this.state.folderName+' created successfully'});
+            }
         })
         .catch(error => {
             console.log(error);
@@ -78,23 +77,23 @@ class RightPaneComponent extends React.Component {
         formData.append('senderPub',this.state.loggedInUser);
         formData.append('reciPub',shareAttributes.boolean ? shareAttributes.receipentAddress : this.state.loggedInUser);
         if(type === 1) {
-            url = 'http://204.48.21.88:3000/upload';
+            url = 'http://35.200.183.53:3000/upload';
             formData.append('file', this.state.fileSelected);
         }
         else if(type === 2) {
-            url = 'http://204.48.21.88:3000/upload/update';
+            url = 'http://35.200.183.53:3000/upload/update';
             formData.append('file', this.state.fileSelected);
             formData.append('appName',this.props.pwdAttributes.kfsName);
         }
         else if(type === 3) {
-            url = 'http://204.48.21.88:3000/uploadfolder';
+            url = 'http://35.200.183.53:3000/uploadfolder';
             const array = this.state.fileSelected;
             for(let i=0;i<array.length;i++) {
                 formData.append('multiplefiles',array[i]);
             }
         }
         else {
-            url = 'http://204.48.21.88:3000/updatefolder';
+            url = 'http://35.200.183.53:3000/updatefolder';
             const array = this.state.fileSelected;
             for(let i=0;i<array.length;i++) {
                 formData.append('multiplefiles',array[i]);
@@ -110,20 +109,30 @@ class RightPaneComponent extends React.Component {
             method:'post',
             url: url,
             auth: {
-                username: 'sai',
-                password: '123'
+                username : 'qwerty',
+                password: '123456'
             },
             data : formData,
             config: { headers: {'Content-Type': 'multipart/form-data' }}
         })
         .then( response => {
             console.log(response);
-            const fileUploadedObject = {
-                status : true,
-                color:'green',
-                message : type === 3 || type === 4 ? 'Folder Uploaded!' : 'File Uploaded'
+            if(response.data === 'file already exists') {
+                const fileUploadedObject = {
+                    status : true,
+                    color:'blue',
+                    message : 'File already exists'
+                }
+                this.setState({uploadnShareAction:'show',fileUploadedObject:fileUploadedObject});
             }
-            this.setState({uploadnShareAction:'show',fileUploadedObject:fileUploadedObject});
+            else {
+                const fileUploadedObject = {
+                    status : true,
+                    color:'green',
+                    message : type === 3 || type === 4 ? 'Folder Uploaded!' : 'File Uploaded'
+                }
+                this.setState({uploadnShareAction:'show',fileUploadedObject:fileUploadedObject});
+            }
         })
         .catch(error => {
             console.log(error);
@@ -138,7 +147,6 @@ class RightPaneComponent extends React.Component {
     
     render() {
         function getNameNCount(array) {
-            console.log(array);
             if(array[0] !== undefined)
                 return array[0].webkitRelativePath.split('/')[0]+' ( '+array.length+' files)';
         }
@@ -223,7 +231,7 @@ class RightPaneComponent extends React.Component {
                             currentDAttritubes = {this.props.pwdAttributes}
                             isFolder = {this.state.fileSelected.length !== undefined ? true : false}
                             triggerRefresh = {() => {
-                                this.setState({uploadnShareAction : 'off'})
+                                this.setState({uploadnShareAction : 'off',fileUploadedObject:freshUploadObject})                                
                                 this.props.refreshDrive({}) }
                             }
                             triggerRefreshOfFolder = {()=> {

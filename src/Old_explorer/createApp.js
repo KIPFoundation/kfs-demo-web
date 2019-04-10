@@ -47,7 +47,7 @@ class ReceiverView extends Component {
   }
 
   getAppID = () => {
-    const appIdUrl = 'http://204.48.21.88:3000/createAppID/'+this.state.appName.trim()+'?sender='+window.btoa(this.state.sender.toLowerCase());
+    const appIdUrl = 'http://35.200.183.53:3000/createAppID/'+this.state.appName.trim()+'?sender='+window.btoa(this.state.sender.toLowerCase());
     console.log(appIdUrl);    
     let appIDHash = '';
           axios.get(appIdUrl)

@@ -27,3 +27,16 @@
      -o-animation: flickerAnimation 3s;
       animation: flickerAnimation 3s;
   }
+
+
+.dontShow {
+  display:none;
+}
+
+.remove_container {
+  z-index: 11; 
+  border-radius:30px;
+  padding:5%;
+  width:60vh;
+  height:20vh;
+}

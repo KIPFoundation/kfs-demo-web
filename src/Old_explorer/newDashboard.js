@@ -107,7 +107,7 @@ export default Dashboard;
 
 // fetchContentOfFileAndRender = (fileToBeRead,fileName) => {
 //     this.setState({ fetchFileContentAction:true,openedFileName:fileName });
-//     const readingUrl = 'http://204.48.21.88:3000/read/'+fileToBeRead+'?reciPub=' + this.state.b64OfSender;
+//     const readingUrl = 'http://35.200.183.53:3000/read/'+fileToBeRead+'?reciPub=' + this.state.b64OfSender;
 //       console.log(readingUrl);
 //       axios.get(readingUrl)
 //       .then( response => {

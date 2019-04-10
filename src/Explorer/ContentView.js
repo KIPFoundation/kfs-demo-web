@@ -20,7 +20,8 @@ class ContentView extends Component {
       source:KIP_LOGO,
       pathTraversal:[],
       fileToBeRead:'',
-      currentFolderProperties:{}
+      currentFolderProperties:{},
+      // closeOptions:'yes'
     }
   }
   
@@ -36,14 +37,16 @@ class ContentView extends Component {
       this.keepDelayInrender();
     }
   }
-
+  special = () => {
+    return this.state.currentFolderProperties;
+  }
 
   keepDelayInrender = () => {
     this.setState({filesWithJSX:<FakeContent />})
     setTimeout(() => {
       this.setState({
         pathTraversal:[{name : 'KFS Drive',kfsName:'none'}],
-        currentFolderProperties : {name : 'explorer'},
+        currentFolderProperties : {name : 'explorer',type:0},
         filesWithJSX : this.renderFiles(this.props.content) });
     }, 1000);  
   }
@@ -61,17 +64,17 @@ class ContentView extends Component {
     let typeNumber = folderAttributes.type;
     let url;
     if(typeNumber === 2) {
-      url = 'http://204.48.21.88:3000/readfolder/'+folderAttributes.kfsID+'?reciPub='+this.state.b64OfSender;
+      url = 'http://35.200.183.53:3000/readfolder/'+folderAttributes.kfsID+'?reciPub='+this.state.b64OfSender;
     }
     else {
-      url = 'http://204.48.21.88:3000/appdata/'+folderAttributes.kfsID+'?reciPub='+this.state.b64OfSender; 
+      url = 'http://35.200.183.53:3000/appdata/'+folderAttributes.kfsID+'?reciPub='+this.state.b64OfSender; 
     }
     axios({
       method:'get',
       url: url,
       auth: {
-          username: 'sai',
-          password: '123'
+          username : 'qwerty',
+          password: '123456'
       }
     })
     .then( response => {
@@ -79,6 +82,7 @@ class ContentView extends Component {
         innerFiles !== null ? innerFiles.map(fileObject => fileObject['is_root_file'] = 'true') : console.log('Folder is empty');
         let tempPathTraversal = this.state.pathTraversal;
         if(!pathRequest) tempPathTraversal.push(folderAttributes);
+        console.log(folderAttributes);
         this.setState({filesWithJSX : this.renderFiles(innerFiles) , currentFolderProperties : folderAttributes , pathTraversal : tempPathTraversal });
     })
     .catch(error => {
@@ -147,14 +151,18 @@ class ContentView extends Component {
                     </Table.Cell>
                   <Table.Cell className="options-menu">
                   <Popup style={{width:'40%'}}
-                    trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
-                    content = {<Options 
+                    trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' 
+                      onClick={()=>this.setState({closeOptions : 'no'})}/>}
+                      content = {<Options 
                         fileAttributes = {file} 
-                        parentProperties={this.state.currentFolderProperties}
+                        parentProperties={() => this.special()}
                         user = {this.state.b64OfSender}
+                        refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
+                        // triggerCloseOptions = {() => this.setState({closeOptions : 'yes'})}
                       />
                     }
                     on='click'
+                    // open={this.state.closeOptions === 'no' ? true : false}
                     position='bottom right'
                   />
                   </Table.Cell>
@@ -186,8 +194,10 @@ class ContentView extends Component {
                     trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
                     content = {<Options 
                         fileAttributes = {file} 
-                        parentProperties={this.state.currentFolderProperties}
+                        parentProperties={() => this.special()}                        
                         user = {this.state.b64OfSender}
+                refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
+
                       />
                     }
                     on='click'
@@ -222,8 +232,10 @@ class ContentView extends Component {
                   trigger={<Button style={{backgroundColor:'transparent',padding:'8% 12% 8% 12%'}} size="huge" icon='ellipsis horizontal' />}
                   content = {<Options 
                       fileAttributes = {file} 
-                      parentProperties={this.state.currentFolderProperties}
+                      parentProperties={() => this.special()}                      
                       user = {this.state.b64OfSender}
+                refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
+
                     />
                   }
                   on='click'
