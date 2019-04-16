@@ -1,6 +1,6 @@
 import React from 'react'
 import { Button, Card,Popup ,Icon } from 'semantic-ui-react';
-import web3 from './web3.js';
+import web3 from '../miscellaneous/web3.js';
 
 class AccountOptions extends React.Component {
   state = {
@@ -13,15 +13,15 @@ class AccountOptions extends React.Component {
  
   render() {
     return (
-      <Popup
+      <Popup style={{padding:'0px'}}
+        position="bottom left"
         trigger={<Icon name='user circle' size="huge"/>}
         content={
-          <Card style={{borderRadius:'0px',border:'0px'}}>
+          <Card style={{borderRadius:'0px',border:'0px',margin:'0px'}}>
             <Card.Content>
               <Card.Header>Your Account</Card.Header>
-              <Card.Meta style={{fontSize:'14px'}}>is identified By</Card.Meta>
               <Card.Description>
-                <h4 style={{ width: '250px',wordWrap: 'break-word'}}>{this.state.accountLoggedIn}</h4>
+                <h4 style={{ width: '80%',wordWrap: 'break-word'}}>{this.state.accountLoggedIn}</h4>
               </Card.Description>
             </Card.Content>
             <Card.Content extra>
@@ -34,7 +34,6 @@ class AccountOptions extends React.Component {
           </Card>
         }
         on='click'
-        position='top right'
       />
     );
   }

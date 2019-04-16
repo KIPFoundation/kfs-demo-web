@@ -13,7 +13,6 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  /* justify-content: center; */
   font-size: calc(10px + 2vmin);
   color: #000000;
 }
@@ -65,39 +64,22 @@ span {
 }
 
 
-/* The Modal (background) */
-.modal {
-   /* Hidden by default */
-  position: fixed; /* Stay in place */
-  z-index: 1; /* Sit on top */
-  padding-top: 100px; /* Location of the box */
-  left: 0;
-  top: 0;
-  width: 100%; /* Full width */
-  height: 100%; /* Full height */
-  overflow: auto; /* Enable scroll if needed */
-  background-color: rgb(0,0,0); /* Fallback color */
-  background-color: rgba(0,0,0,0.9); /* Black w/ opacity */
+
+
+.completePage {
+  display:flex;
+  width: 100%;
+  height: 100vh;
+  overflow:hidden;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
 }
 
-/* Modal Content */
-.modal-content {
-  margin: auto;
-  padding: 10px;
-  width: 80%;
+.left_pane {
+  background-color:#252525;
+  width:15%;
 }
 
-/* The Close Button */
-.close {
-  color: #ffffff;
-  float: right;
-  font-size: 28px;
-  font-weight: bold;
-}
-
-.close:hover,
-.close:focus {
-  color: #000;
-  text-decoration: none;
-  cursor: pointer;
+.main_body {
+  background-color:#e6e4e4;
+  width:85%;
 }
