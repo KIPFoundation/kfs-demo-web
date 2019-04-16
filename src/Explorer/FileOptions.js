@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import {List,Icon,Modal,Button,Header} from 'semantic-ui-react';
+import {List,Icon,Button,Header} from 'semantic-ui-react';
 import axios from 'axios';
 import '../assets/css/fileOptions.css';
 class Options extends Component {
@@ -24,6 +24,7 @@ class Options extends Component {
       }
     }
     removeFile = () => {
+      let driveRefreshBoolean = false;
       const fileAttributes = this.state.fileAttributes;
       const folderAttributes = this.state.folderAttributes;
       this.setState({removeProcessing:true});
@@ -46,12 +47,48 @@ class Options extends Component {
           '&type=file'
         }
         else {
+          driveRefreshBoolean = true;
           removeURL = 'http://35.200.183.53:3000/Remove?'+
           '&senderPub='+this.props.user+
           '&name='+fileAttributes.file_name+
           '&hash='+fileAttributes.file_hash+
           '&type=file'
         }
+        axios({
+          method:'get',
+          url: removeURL,
+          auth: {
+              username : 'qwerty',
+              password: '123456'
+          }
+        })
+        .then( response => {
+          if(response.data === 'Permission denied') {
+            this.setState({removeObject : {
+              status : true,
+              message : 'Permission denied...!',
+              color:'red',
+              appIdAttempt:driveRefreshBoolean,
+            },removeProcessing:false})
+          }
+          else {
+            this.setState({removeObject : {
+              status : true,
+              message : 'File/Folder removed !',
+              color:'green',
+              appIdAttempt:driveRefreshBoolean,              
+            },removeProcessing:false})
+          }
+        })
+        .catch(error => {
+            console.log(error);
+            this.setState({removeObject : {
+              status : true,
+              message : 'Error in removing / file got removed but error in unpinning',
+              color:'red',
+              appIdAttempt:driveRefreshBoolean,              
+            },removeProcessing:false})
+        });  
       }
       else if(fileAttributes.folder_name !== undefined) {
         if(folderAttributes.type === 1) {
@@ -71,45 +108,58 @@ class Options extends Component {
           '&type=folder'
         }
         else {
-          removeURL = 'http://35.200.183.53:3000/RemoveFileFolder?'+
+          driveRefreshBoolean = true;
+          removeURL = 'http://35.200.183.53:3000/Remove?'+
           '&senderPub='+this.props.user+
           '&name='+fileAttributes.folder_name+
           '&hash='+fileAttributes.folder_hash+
           '&type=folder'
         }
+        console.log(removeURL);
+        axios({
+          method:'get',
+          url: removeURL,
+          auth: {
+              username : 'qwerty',
+              password: '123456'
+          }
+        })
+        .then( response => {
+          if(response.data === 'Permission denied') {
+            this.setState({removeObject : {
+              status : true,
+              message : 'Permission denied...!',
+              color:'red',
+              appIdAttempt:driveRefreshBoolean,              
+            },removeProcessing:false})
+          }
+          else {
+            this.setState({removeObject : {
+              status : true,
+              message : 'File/Folder removed !',
+              color:'green',
+              appIdAttempt:driveRefreshBoolean,              
+            },removeProcessing:false})
+          }
+        })
+        .catch(error => {
+            console.log(error);
+            this.setState({removeObject : {
+              status : true,
+              message : 'Error in removing / file got removed but error in unpinning',
+              color:'red',
+              appIdAttempt:driveRefreshBoolean,              
+            },removeProcessing:false})
+        });  
       }
       else {
         this.setState({removeObject : {
           status : true,
           message : "You cannot remove a shared folder!",
-          color:'blue'
+          color:'blue',
+          appIdAttempt:true,          
         },removeProcessing:false})
       }
-      console.log(removeURL);
-      axios({
-        method:'get',
-        url: removeURL,
-        auth: {
-            username : 'qwerty',
-            password: '123456'
-        }
-      })
-      .then( response => {
-          console.log(response);
-          this.setState({removeObject : {
-            status : true,
-            message : 'File/Folder removed !',
-            color:'green'
-          },removeProcessing:false})
-      })
-      .catch(error => {
-          console.log(typeof(error));
-          this.setState({removeObject : {
-            status : true,
-            message : 'Error in removing / file got removed but error in unpinning',
-            color:'red'
-          },removeProcessing:false})
-      });  
     }
 
     render() {
@@ -141,8 +191,14 @@ class Options extends Component {
             <div className={this.state.modalOpen && this.state.removeObject.status ? "remove_container" : "dontShow"}>                
                 <Header color={this.state.removeObject.color} size="medium">{this.state.removeObject.message}</Header> 
                 <Button onClick={()=>{
-                  this.setState({modalOpen:false})
-                  this.props.refreshOpenedFolder(this.state.folderAttributes)}
+                  this.setState({modalOpen:false});
+                  console.log(this.state.removeObject.appIdAttempt);
+                  if(this.state.removeObject.appIdAttempt) {
+                    this.props.refreshExplorer(this.state.folderAttributes)
+                  }
+                  else {
+                    this.props.refreshOpenedFolder(this.state.folderAttributes)}
+                  }
                  } color="blue" size="large" basic>Ok</Button>
             </div>
         </React.Fragment>

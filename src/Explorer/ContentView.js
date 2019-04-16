@@ -82,12 +82,12 @@ class ContentView extends Component {
         innerFiles !== null ? innerFiles.map(fileObject => fileObject['is_root_file'] = 'true') : console.log('Folder is empty');
         let tempPathTraversal = this.state.pathTraversal;
         if(!pathRequest) tempPathTraversal.push(folderAttributes);
-        console.log(folderAttributes);
         this.setState({filesWithJSX : this.renderFiles(innerFiles) , currentFolderProperties : folderAttributes , pathTraversal : tempPathTraversal });
     })
     .catch(error => {
         console.log(url)
         console.log(error);
+        this.setState({filesWithJSX : []})
     });      
   }
 
@@ -158,7 +158,7 @@ class ContentView extends Component {
                         parentProperties={() => this.special()}
                         user = {this.state.b64OfSender}
                         refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
-                        // triggerCloseOptions = {() => this.setState({closeOptions : 'yes'})}
+                        refreshExplorer = {() => this.props.refreshDrive()}                        
                       />
                     }
                     on='click'
@@ -196,8 +196,8 @@ class ContentView extends Component {
                         fileAttributes = {file} 
                         parentProperties={() => this.special()}                        
                         user = {this.state.b64OfSender}
-                refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
-
+                        refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
+                        refreshExplorer = {() => this.props.refreshDrive()}
                       />
                     }
                     on='click'
@@ -234,8 +234,8 @@ class ContentView extends Component {
                       fileAttributes = {file} 
                       parentProperties={() => this.special()}                      
                       user = {this.state.b64OfSender}
-                refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
-
+                      refreshOpenedFolder = {(folderAttributes)=> this.fetchFilesOfFolder(folderAttributes,true)}
+                      refreshExplorer = {() => this.props.refreshDrive()}
                     />
                   }
                   on='click'
